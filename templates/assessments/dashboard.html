@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - RoBAss{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-3">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+            </h1>
+            <p class="text-muted">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card card">
+                <div class="stat-number">{{ total_projects }}</div>
+                <div class="stat-label">Projects</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card card">
+                <div class="stat-number">{{ total_studies }}</div>
+                <div class="stat-label">Studies</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card card">
+                <div class="stat-number">{{ total_assessments }}</div>
+                <div class="stat-label">Assessments</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card card">
+                <div class="stat-number">{{ completed_assessments }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Recent Projects -->
+        <div class="col-lg-8">
+            <div class="dashboard-widget">
+                <div class="widget-title">
+                    <i class="fas fa-folder me-2"></i>
+                    Your Projects
+                </div>
+                {% if projects %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Studies</th>
+                                <th>Assessments</th>
+                                <th>Last Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                            <tr>
+                                <td>
+                                    <strong>{{ project.name }}</strong>
+                                    {% if project.description %}
+                                        <br><small class="text-muted">{{ project.description|truncatechars:50 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ project.study_count }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ project.assessment_count }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ project.updated_at|timesince }} ago</small>
+                                </td>
+                                <td>
+                                    <a href="{% url 'assessments:project_detail' project.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">You haven't created any projects yet.</p>
+                    <a href="{% url 'assessments:project_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Create Your First Project
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="col-lg-4">
+            <div class="dashboard-widget">
+                <div class="widget-title">
+                    <i class="fas fa-clock me-2"></i>
+                    Recent Activity
+                </div>
+                {% if recent_assessments %}
+                <div class="list-group list-group-flush">
+                    {% for assessment in recent_assessments %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ assessment.study.title|truncatechars:30 }}</h6>
+                            <small class="text-muted">{{ assessment.updated_at|timesince }} ago</small>
+                        </div>
+                        <p class="mb-1">
+                            <span class="badge bg-primary">{{ assessment.assessment_tool.display_name }}</span>
+                        </p>
+                        <small class="text-muted">
+                            {% if assessment.status == 'completed' %}
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                            {% elif assessment.status == 'draft' %}
+                                <i class="fas fa-edit text-warning me-1"></i>
+                            {% else %}
+                                <i class="fas fa-clock text-info me-1"></i>
+                            {% endif %}
+                            {{ assessment.get_status_display }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-clipboard-list fa-2x text-muted mb-2"></i>
+                    <p class="text-muted small">No recent assessments</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

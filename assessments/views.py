@@ -20,17 +20,7 @@ from .utils import generate_visualization, export_assessments_csv
 
 def home_view(request):
     """Home page with overview of RoBAss"""
-    tools = AssessmentTool.objects.filter(is_active=True)
-    recent_assessments = None
-    
-    if request.user.is_authenticated:
-        recent_assessments = Assessment.objects.filter(
-            study__project__user=request.user
-        ).order_by('-updated_at')[:5]
-    
     context = {
-        'tools': tools,
-        'recent_assessments': recent_assessments,
         'title': 'Risk of Bias Assessment Tool'
     }
     return render(request, 'assessments/home.html', context)
@@ -270,10 +260,7 @@ def guest_access_view(request):
 
 def about_view(request):
     """About page with tool information"""
-    tools = AssessmentTool.objects.filter(is_active=True).prefetch_related('domains')
-    
     context = {
-        'tools': tools,
         'title': 'About RoBAss'
     }
     return render(request, 'assessments/about.html', context)
