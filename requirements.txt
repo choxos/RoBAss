@@ -4,3 +4,14 @@ dj-database-url==2.1.0
 gunicorn==21.2.0
 whitenoise==6.6.0
 python-dotenv==1.0.0
+
+# Data visualization and analysis
+matplotlib==3.8.2
+seaborn==0.13.0
+pandas==2.1.4
+numpy==1.26.2
+Pillow==10.1.0
+
+# Additional Django packages
+django-crispy-forms==2.1
+crispy-bootstrap5==0.7

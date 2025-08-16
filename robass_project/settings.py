@@ -30,7 +30,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-r*sq160d6z@03b8zhxgyei_epp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Railway deployment configuration
+ALLOWED_HOSTS = ['*']  # Railway handles host filtering
+if os.getenv('ALLOWED_HOSTS'):
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 
 # Application definition
@@ -46,7 +49,6 @@ INSTALLED_APPS = [
     # Third party apps
     "crispy_forms",
     "crispy_bootstrap5",
-    "django_extensions",
     
     # Local apps
     "accounts",
