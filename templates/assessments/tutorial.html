@@ -1,0 +1,578 @@
+{% extends 'base.html' %}
+
+{% block title %}Tutorial & Guide - RoBAss{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="fas fa-graduation-cap me-3 text-primary"></i>
+            RoBAss Tutorial & Guide
+        </h1>
+        <p class="lead text-muted">
+            Master risk of bias assessment with comprehensive scientific guidance
+        </p>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="row mb-5">
+        <div class="col-lg-3">
+            <div class="sticky-top" style="top: 2rem;">
+                <div class="card border-0 bg-light">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Table of Contents
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <nav class="nav nav-pills flex-column p-3">
+                            <a class="nav-link text-dark" href="#getting-started">Getting Started</a>
+                            <a class="nav-link text-dark" href="#rob2">RoB 2.0</a>
+                            <a class="nav-link text-dark" href="#robins-i">ROBINS-I</a>
+                            <a class="nav-link text-dark" href="#robins-e">ROBINS-E</a>
+                            <a class="nav-link text-dark" href="#amstar2">AMSTAR-2</a>
+                            <a class="nav-link text-dark" href="#robis">ROBIS</a>
+                            <a class="nav-link text-dark" href="#workflow">Assessment Workflow</a>
+                            <a class="nav-link text-dark" href="#interpretation">Results Interpretation</a>
+                            <a class="nav-link text-dark" href="#visualization">Visualizations</a>
+                            <a class="nav-link text-dark" href="#best-practices">Best Practices</a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Getting Started -->
+            <section id="getting-started" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-rocket me-2"></i>
+                            Getting Started with RoBAss
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p>RoBAss is designed to streamline systematic risk of bias assessment for health research. Here's how to begin:</p>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 2.5rem; height: 2.5rem;">1</div>
+                                    <div>
+                                        <h6>Create Account or Use Guest Access</h6>
+                                        <p class="text-muted small">Register for permanent data storage or try guest access for evaluation.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 2.5rem; height: 2.5rem;">2</div>
+                                    <div>
+                                        <h6>Create a Project</h6>
+                                        <p class="text-muted small">Organize your assessments by systematic review or research project.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 2.5rem; height: 2.5rem;">3</div>
+                                    <div>
+                                        <h6>Add Studies</h6>
+                                        <p class="text-muted small">Input study details and metadata for each paper you're assessing.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 2.5rem; height: 2.5rem;">4</div>
+                                    <div>
+                                        <h6>Select Assessment Tool</h6>
+                                        <p class="text-muted small">Choose the appropriate tool based on study design and research question.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RoB 2.0 -->
+            <section id="rob2" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-flask me-2"></i>
+                            RoB 2.0 - Risk of Bias in Randomized Trials
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <strong>Purpose:</strong> Assess risk of bias in randomized controlled trials (RCTs) and cluster-randomized trials.
+                        </div>
+                        
+                        <h5>Scientific Background</h5>
+                        <p>RoB 2.0, developed by the Cochrane Collaboration, is the revised tool for assessing risk of bias in randomized trials. It replaced the original Cochrane Risk of Bias tool and provides a more structured approach with signaling questions leading to domain-level judgments.</p>
+                        
+                        <h5>Five Assessment Domains</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-primary">1. Bias arising from the randomization process</h6>
+                                    <p class="mb-2"><strong>Focus:</strong> Sequence generation and allocation concealment</p>
+                                    <p class="small text-muted">Examines whether the randomization sequence was adequately generated and whether allocation was properly concealed until assignment.</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-primary">2. Bias due to deviations from intended interventions</h6>
+                                    <p class="mb-2"><strong>Focus:</strong> Blinding and adherence to assigned intervention</p>
+                                    <p class="small text-muted">Assesses deviations from assigned interventions due to the experimental context or deviations that would not occur outside a trial.</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-primary">3. Bias due to missing outcome data</h6>
+                                    <p class="mb-2"><strong>Focus:</strong> Completeness of outcome data and handling of missing data</p>
+                                    <p class="small text-muted">Evaluates whether missing outcome data could have affected the observed effect estimate.</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-primary">4. Bias in measurement of the outcome</h6>
+                                    <p class="mb-2"><strong>Focus:</strong> Blinding of outcome assessors and measurement methods</p>
+                                    <p class="small text-muted">Assesses whether outcome measurement was influenced by knowledge of the assigned intervention.</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-primary">5. Bias in selection of the reported result</h6>
+                                    <p class="mb-2"><strong>Focus:</strong> Selective reporting based on results</p>
+                                    <p class="small text-muted">Examines whether reported results were selected from multiple analyses based on the results.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4">Judgment Scale</h5>
+                        <ul>
+                            <li><span class="badge bg-success me-2">Low risk</span>The study is judged to be at low risk of bias for all domains</li>
+                            <li><span class="badge bg-warning me-2">Some concerns</span>The study is judged to raise some concerns in at least one domain, but not high risk</li>
+                            <li><span class="badge bg-danger me-2">High risk</span>The study is judged to be at high risk of bias in at least one domain</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ROBINS-I -->
+            <section id="robins-i" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-users me-2"></i>
+                            ROBINS-I - Risk of Bias In Non-randomized Studies of Interventions
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <strong>Purpose:</strong> Assess risk of bias in non-randomized studies of interventions (cohort studies, case-control studies, controlled before-after studies).
+                        </div>
+                        
+                        <h5>Scientific Background</h5>
+                        <p>ROBINS-I evaluates non-randomized studies by comparing them to a hypothetical target randomized trial. It recognizes that non-randomized studies face additional biases that wouldn't occur in randomized trials.</p>
+                        
+                        <h5>Seven Assessment Domains</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-info">Pre-intervention</h6>
+                                    <p class="mb-1"><strong>1. Confounding</strong> - Baseline differences between groups</p>
+                                    <p class="mb-1"><strong>2. Selection of participants</strong> - Selection bias related to intervention</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-info">At intervention</h6>
+                                    <p class="mb-1"><strong>3. Classification of interventions</strong> - Misclassification of intervention status</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-info">Post-intervention</h6>
+                                    <p class="mb-1"><strong>4. Deviations from intended interventions</strong> - Performance bias</p>
+                                    <p class="mb-1"><strong>5. Missing data</strong> - Attrition bias</p>
+                                    <p class="mb-1"><strong>6. Measurement of outcomes</strong> - Detection bias</p>
+                                    <p class="mb-1"><strong>7. Selection of reported result</strong> - Reporting bias</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <strong>Key Concept:</strong> ROBINS-I assumes that confounding is the most important threat to validity in non-randomized studies. Special attention is given to identifying and assessing potential confounders.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ROBINS-E -->
+            <section id="robins-e" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-eye me-2"></i>
+                            ROBINS-E - Risk of Bias In Non-randomized Studies of Exposure
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <strong>Purpose:</strong> Assess risk of bias in non-randomized studies evaluating the effects of exposures (environmental, occupational, lifestyle factors).
+                        </div>
+                        
+                        <h5>Scientific Background</h5>
+                        <p>ROBINS-E is designed for studies where the exposure is not assigned by researchers but occurs naturally. It's particularly relevant for environmental epidemiology and observational studies of harmful exposures.</p>
+                        
+                        <h5>Key Differences from ROBINS-I</h5>
+                        <ul>
+                            <li>Focuses on <em>exposures</em> rather than <em>interventions</em></li>
+                            <li>Considers ethical constraints that prevent randomized trials</li>
+                            <li>Addresses time-varying exposures and cumulative effects</li>
+                            <li>Emphasizes exposure measurement and classification</li>
+                        </ul>
+                        
+                        <div class="alert alert-success">
+                            <strong>Example Applications:</strong>
+                            <ul class="mb-0">
+                                <li>Air pollution and respiratory health</li>
+                                <li>Dietary factors and disease risk</li>
+                                <li>Occupational exposures and cancer</li>
+                                <li>Physical activity and cardiovascular outcomes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AMSTAR-2 -->
+            <section id="amstar2" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-search me-2"></i>
+                            AMSTAR-2 - Assessment of Multiple Systematic Reviews
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <strong>Purpose:</strong> Assess the methodological quality of systematic reviews that include randomized or non-randomized studies.
+                        </div>
+                        
+                        <h5>Scientific Background</h5>
+                        <p>AMSTAR-2 is a critical appraisal tool for systematic reviews. It helps determine the reliability of systematic review findings by evaluating the methods used in conducting the review.</p>
+                        
+                        <h5>16 Assessment Items</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <h6>Critical Items (weighted more heavily)</h6>
+                                <ul class="small">
+                                    <li>Item 2: Protocol registration</li>
+                                    <li>Item 4: Comprehensive literature search</li>
+                                    <li>Item 7: List of excluded studies</li>
+                                    <li>Item 9: Risk of bias assessment</li>
+                                    <li>Item 11: Appropriate meta-analysis methods</li>
+                                    <li>Item 13: Impact of risk of bias on results</li>
+                                    <li>Item 15: Assessment of publication bias</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Non-Critical Items</h6>
+                                <ul class="small">
+                                    <li>Item 1: Research questions and inclusion criteria</li>
+                                    <li>Item 3: Study design explanation</li>
+                                    <li>Item 5: Duplicate study selection</li>
+                                    <li>Item 6: Duplicate data extraction</li>
+                                    <li>Item 8: Study characteristics description</li>
+                                    <li>Item 10: Funding sources reporting</li>
+                                    <li>Item 12: Risk of bias impact assessment</li>
+                                    <li>Item 14: Heterogeneity discussion</li>
+                                    <li>Item 16: Conflicts of interest</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <h5>Overall Confidence Rating</h5>
+                        <ul>
+                            <li><span class="badge bg-success me-2">High</span>No or one non-critical weakness</li>
+                            <li><span class="badge bg-warning text-dark me-2">Moderate</span>More than one non-critical weakness</li>
+                            <li><span class="badge bg-danger me-2">Low</span>One critical flaw with or without non-critical weaknesses</li>
+                            <li><span class="badge bg-dark me-2">Critically Low</span>More than one critical flaw with or without non-critical weaknesses</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ROBIS -->
+            <section id="robis" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-book me-2"></i>
+                            ROBIS - Risk of Bias in Systematic Reviews
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <strong>Purpose:</strong> Assess risk of bias in systematic reviews across all medical and healthcare fields.
+                        </div>
+                        
+                        <h5>Scientific Background</h5>
+                        <p>ROBIS is a tool for assessing risk of bias in systematic reviews. Unlike AMSTAR-2 which focuses on methodological quality, ROBIS specifically evaluates bias in the review process.</p>
+                        
+                        <h5>Three-Phase Assessment</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-danger">Phase 1: Assess relevance</h6>
+                                    <p class="small">Determine if the review is relevant to your research question</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-danger">Phase 2: Identify concerns with the review process</h6>
+                                    <ul class="small mb-0">
+                                        <li>Domain 1: Study eligibility criteria</li>
+                                        <li>Domain 2: Identification and selection of studies</li>
+                                        <li>Domain 3: Data collection and study appraisal</li>
+                                        <li>Domain 4: Synthesis and findings</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h6 class="text-danger">Phase 3: Judge risk of bias in the review</h6>
+                                    <p class="small">Overall assessment based on phase 2 findings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Assessment Workflow -->
+            <section id="workflow" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-workflow me-2"></i>
+                            Assessment Workflow in RoBAss
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h6>1. Project Setup</h6>
+                                <ul class="small">
+                                    <li>Create a project for your systematic review</li>
+                                    <li>Add collaborators if working in a team</li>
+                                    <li>Set project parameters and timeline</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>2. Study Management</h6>
+                                <ul class="small">
+                                    <li>Import or manually add study details</li>
+                                    <li>Include full citations and DOIs</li>
+                                    <li>Organize studies by categories if needed</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>3. Tool Selection</h6>
+                                <ul class="small">
+                                    <li>Choose appropriate assessment tool</li>
+                                    <li>Consider study design and research question</li>
+                                    <li>Ensure consistency across assessors</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>4. Assessment Process</h6>
+                                <ul class="small">
+                                    <li>Complete all signaling questions</li>
+                                    <li>Provide detailed justifications</li>
+                                    <li>Save progress regularly</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-success mt-3">
+                            <strong>Pro Tip:</strong> Always complete assessments in duplicate (two independent assessors) and resolve disagreements through discussion or third-party adjudication.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Interpretation -->
+            <section id="interpretation" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Interpreting Assessment Results
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <h5>Understanding Risk of Bias Judgments</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded">
+                                    <div class="bg-success text-white rounded-circle mx-auto mb-2" style="width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <h6>Low Risk</h6>
+                                    <p class="small text-muted">Study is unlikely to seriously alter the results</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded">
+                                    <div class="bg-warning text-white rounded-circle mx-auto mb-2" style="width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-question"></i>
+                                    </div>
+                                    <h6>Some Concerns</h6>
+                                    <p class="small text-muted">Study may alter results but unlikely to affect conclusions</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded">
+                                    <div class="bg-danger text-white rounded-circle mx-auto mb-2" style="width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                    <h6>High Risk</h6>
+                                    <p class="small text-muted">Study has serious problems that may invalidate results</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4">Reporting Guidelines</h5>
+                        <ul>
+                            <li>Always report the specific tool version used</li>
+                            <li>Describe how disagreements were resolved</li>
+                            <li>Present results visually (traffic light plots)</li>
+                            <li>Discuss implications for overall evidence quality</li>
+                            <li>Consider sensitivity analyses excluding high-risk studies</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visualization -->
+            <section id="visualization" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Visualization Options
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <h5>RoBAss Visualization Features</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-traffic-light fa-2x text-primary mb-2"></i>
+                                        <h6>Traffic Light Plots</h6>
+                                        <p class="small">Show risk of bias for each study across domains</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-chart-pie fa-2x text-success mb-2"></i>
+                                        <h6>Summary Charts</h6>
+                                        <p class="small">Proportion of studies in each risk category</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-weight fa-2x text-warning mb-2"></i>
+                                        <h6>Weighted Plots</h6>
+                                        <p class="small">Account for study weight in meta-analysis</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <strong>Export Options:</strong> All visualizations can be exported as high-resolution PNG or PDF files for use in publications and presentations.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Best Practices -->
+            <section id="best-practices" class="mb-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <h2 class="h4 mb-0">
+                            <i class="fas fa-star me-2"></i>
+                            Best Practices & Recommendations
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-users text-primary me-2"></i>Team Assessment</h6>
+                                <ul class="small">
+                                    <li>Use at least two independent assessors</li>
+                                    <li>Pilot test the tool on a subset of studies</li>
+                                    <li>Develop assessment guidelines for your team</li>
+                                    <li>Calculate inter-rater agreement (kappa)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-book-open text-success me-2"></i>Documentation</h6>
+                                <ul class="small">
+                                    <li>Keep detailed justifications for all judgments</li>
+                                    <li>Record the tool version and date used</li>
+                                    <li>Document any deviations from standard procedures</li>
+                                    <li>Maintain an assessment log</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-chart-line text-info me-2"></i>Analysis Integration</h6>
+                                <ul class="small">
+                                    <li>Incorporate bias assessment into evidence synthesis</li>
+                                    <li>Perform sensitivity analyses</li>
+                                    <li>Use GRADE to assess evidence certainty</li>
+                                    <li>Report limitations transparently</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-shield-alt text-warning me-2"></i>Quality Assurance</h6>
+                                <ul class="small">
+                                    <li>Regular calibration exercises</li>
+                                    <li>Periodic review of completed assessments</li>
+                                    <li>Seek expert consultation when uncertain</li>
+                                    <li>Stay updated with tool revisions</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-primary mt-4">
+                            <h6><i class="fas fa-lightbulb me-2"></i>Remember</h6>
+                            <p class="mb-0">Risk of bias assessment is not about perfect studies—it's about understanding limitations and their potential impact on results. Transparency and consistency are more important than achieving "low risk" judgments.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- Back to top button -->
+<button type="button" class="btn btn-primary position-fixed bottom-0 end-0 m-3" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="z-index: 1000;">
+    <i class="fas fa-arrow-up"></i>
+</button>
+{% endblock %}

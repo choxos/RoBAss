@@ -35,6 +35,14 @@ ALLOWED_HOSTS = ['*']  # Railway handles host filtering
 if os.getenv('ALLOWED_HOSTS'):
     ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
+# CSRF settings for Railway deployment
+CSRF_TRUSTED_ORIGINS = [
+    'https://robass.up.railway.app',
+    'https://*.up.railway.app',
+]
+if os.getenv('CSRF_TRUSTED_ORIGINS'):
+    CSRF_TRUSTED_ORIGINS.extend(os.getenv('CSRF_TRUSTED_ORIGINS').split(','))
+
 
 # Application definition
 

@@ -7,6 +7,7 @@ urlpatterns = [
     # Home and main pages
     path('', views.home_view, name='home'),
     path('about/', views.about_view, name='about'),
+    path('tutorial/', views.tutorial_view, name='tutorial'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('guest/', views.guest_access_view, name='guest_access'),
     

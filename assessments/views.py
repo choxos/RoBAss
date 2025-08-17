@@ -266,6 +266,14 @@ def about_view(request):
     return render(request, 'assessments/about.html', context)
 
 
+def tutorial_view(request):
+    """Tutorial page with comprehensive guide"""
+    context = {
+        'title': 'Tutorial & Guide'
+    }
+    return render(request, 'assessments/tutorial.html', context)
+
+
 @require_http_methods(["POST"])
 @login_required
 def save_response_view(request, assessment_id):
