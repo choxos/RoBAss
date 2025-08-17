@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ title }}</h2>
+        <div class="badge bg-warning text-dark">Guest Session</div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ project.name }}</h5>
+            <p class="card-text text-muted">{{ project.description|default:"No description provided" }}</p>
+            <small class="text-muted">
+                Created: {{ project.created_at|date:"M d, Y" }} | 
+                Last Updated: {{ project.updated_at|date:"M d, Y" }}
+            </small>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Studies</h5>
+            <div class="badge bg-secondary">{{ studies.count }} studies</div>
+        </div>
+        <div class="card-body">
+            {% if studies %}
+                <div class="list-group list-group-flush">
+                    {% for study in studies %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ study.title }}</h6>
+                                    {% if study.authors %}
+                                        <p class="mb-1 text-muted small">Authors: {{ study.authors }}</p>
+                                    {% endif %}
+                                    {% if study.journal %}
+                                        <p class="mb-1 text-muted small">Journal: {{ study.journal }}{% if study.year %} ({{ study.year }}){% endif %}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-info">{{ study.assessment_count }} assessment{{ study.assessment_count|pluralize }}</span>
+                                    {% for assessment in study.assessments.all %}
+                                        <div class="mt-1">
+                                            <a href="{% url 'assessments:guest_assessment_detail' assessment_id=assessment.id %}" class="btn btn-sm btn-outline-primary">
+                                                {{ assessment.assessment_tool.display_name }}
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="fas fa-file-medical fa-2x mb-3"></i>
+                        <p>No studies added yet.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'assessments:tool_selection' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Add Another Study
+        </a>
+        <a href="{% url 'assessments:home' %}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-home me-2"></i>
+            Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}

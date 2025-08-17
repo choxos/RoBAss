@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">{{ title }}</h2>
+
+  <form id="assessment-form" method="post">
+    {% csrf_token %}
+    
+    {% for item in assessment_data %}
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <strong>{{ item.domain_assessment.domain.order }}. {{ item.domain_assessment.domain.name }}</strong>
+          <span class="badge bg-secondary float-end">Domain Rating: {{ item.domain_assessment.get_bias_rating_display|default:'-' }}</span>
+        </div>
+        <div class="card-body">
+          <p>{{ item.domain_assessment.domain.description }}</p>
+
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th style="width: 5%">#</th>
+                <th style="width: 55%">Signalling Question</th>
+                <th style="width: 20%">Response</th>
+                <th style="width: 20%">Justification</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for qdata in item.questions %}
+                <tr data-domain-id="{{ item.domain_assessment.domain.id }}" data-question-id="{{ qdata.question.id }}">
+                  <td>{{ qdata.question.order }}</td>
+                  <td>{{ qdata.question.question_text }}</td>
+                  <td>
+                    <select class="form-select form-select-sm response-select">
+                      <option value="" {% if not qdata.response %}selected{% endif %}>--</option>
+                      {% for val, label in qdata.question.RESPONSE_CHOICES %}
+                        <option value="{{ val }}" {% if qdata.response and qdata.response.response == val %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td>
+                    <textarea rows="2" class="form-control form-control-sm justification-textarea">{% if qdata.response %}{{ qdata.response.justification }}{% endif %}</textarea>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <div class="mt-3">
+            <label><strong>Domain bias rating</strong></label>
+            <select class="form-select domain-bias-select" data-domain-id="{{ item.domain_assessment.domain.id }}">
+              <option value="" {% if not item.domain_assessment.bias_rating %}selected{% endif %}>--</option>
+              {% for val, label in item.domain_assessment.BIAS_CHOICES %}
+                <option value="{{ val }}" {% if item.domain_assessment.bias_rating == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <textarea rows="3" class="form-control form-control-sm mt-2 domain-rationale" placeholder="Rationale for domain rating" data-domain-id="{{ item.domain_assessment.domain.id }}">{{ item.domain_assessment.rationale }}</textarea>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+
+    <div class="text-end mb-5">
+      <button type="button" class="btn btn-primary" id="save-assessment-btn">Save All Responses</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const csrftoken = '{{ csrf_token }}';
+  const assessmentId = '{{ assessment.id }}';
+  const isGuest = {% if is_guest %}true{% else %}false{% endif %};
+
+  function saveResponse(domainId, questionId, response, justification) {
+    const saveUrl = isGuest ? 
+      `/assessments/guest/assessments/${assessmentId}/save/` : 
+      `/assessments/${assessmentId}/save-response/`;
+    
+    fetch(saveUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify({ domain_id: domainId, question_id: questionId, response: response, justification: justification })
+    }).then(r => r.json()).then(data => {
+      if (!data.success) {
+        console.error(data.message);
+      }
+    }).catch(err => console.error(err));
+  }
+
+  document.querySelectorAll('.response-select').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      const row = e.target.closest('tr');
+      const domainId = row.dataset.domainId;
+      const questionId = row.dataset.questionId;
+      const response = e.target.value;
+      const justification = row.querySelector('.justification-textarea').value;
+      saveResponse(domainId, questionId, response, justification);
+    });
+  });
+
+  document.querySelectorAll('.justification-textarea').forEach(ta => {
+    ta.addEventListener('blur', (e) => {
+      const row = e.target.closest('tr');
+      const domainId = row.dataset.domainId;
+      const questionId = row.dataset.questionId;
+      const response = row.querySelector('.response-select').value;
+      const justification = e.target.value;
+      saveResponse(domainId, questionId, response, justification);
+    });
+  });
+
+  document.getElementById('save-assessment-btn').addEventListener('click', () => {
+    alert('All responses have been saved automatically when edited.');
+  });
+</script>
+{% endblock %}
+

@@ -27,4 +27,11 @@ urlpatterns = [
     path('studies/<int:study_id>/assess/<str:tool_name>/', views.assessment_create_view, name='assessment_create'),
     path('assessments/<int:assessment_id>/', views.assessment_detail_view, name='assessment_detail'),
     path('assessments/<int:assessment_id>/save/', views.save_response_view, name='save_response'),
+    
+    # Guest workflows
+    path('guest/project/new/', views.guest_project_create_view, name='guest_project_create'),
+    path('guest/projects/<uuid:project_id>/', views.guest_project_detail_view, name='guest_project_detail'),
+    path('guest/projects/<uuid:project_id>/studies/<str:tool_name>/', views.guest_study_create_view, name='guest_study_create'),
+    path('guest/assessments/<int:assessment_id>/', views.guest_assessment_detail_view, name='guest_assessment_detail'),
+    path('guest/assessments/<int:assessment_id>/save/', views.guest_save_response_view, name='guest_save_response'),
 ]

@@ -258,6 +258,168 @@ def guest_access_view(request):
     return render(request, 'assessments/guest_access.html', context)
 
 
+def guest_project_create_view(request):
+    """Create project for guest users with tool selection"""
+    tool_name = request.GET.get('tool')
+    tool = None
+    if tool_name:
+        tool = get_object_or_404(AssessmentTool, name=tool_name, is_active=True)
+    
+    if request.method == 'POST':
+        form = ProjectForm(request.POST)
+        if form.is_valid():
+            project = form.save(commit=False)
+            project.user = None  # Guest project
+            
+            # Create or get session key
+            if not request.session.session_key:
+                request.session.create()
+            project.session_key = request.session.session_key
+            project.save()
+            
+            messages.success(request, f'Project "{project.name}" created successfully!')
+            
+            # If tool was selected, redirect to study creation with tool context
+            if tool:
+                return redirect('assessments:guest_study_create', project_id=project.id, tool_name=tool.name)
+            else:
+                return redirect('assessments:guest_project_detail', project_id=project.id)
+    else:
+        form = ProjectForm()
+    
+    context = {
+        'form': form,
+        'tool': tool,
+        'title': f'Create Project - {tool.display_name}' if tool else 'Create Project (Guest)'
+    }
+    return render(request, 'assessments/guest_project_form.html', context)
+
+
+def guest_project_detail_view(request, project_id):
+    """Guest project detail view"""
+    if not request.session.session_key:
+        messages.error(request, 'Session expired. Please start a new guest session.')
+        return redirect('assessments:guest_access')
+    
+    project = get_object_or_404(
+        Project, 
+        id=project_id, 
+        session_key=request.session.session_key,
+        user=None
+    )
+    
+    studies = project.studies.all().annotate(
+        assessment_count=Count('assessments')
+    ).order_by('-updated_at')
+    
+    context = {
+        'project': project,
+        'studies': studies,
+        'title': f'{project.name} (Guest)'
+    }
+    return render(request, 'assessments/guest_project_detail.html', context)
+
+
+def guest_study_create_view(request, project_id, tool_name):
+    """Create study for guest project with direct tool selection"""
+    if not request.session.session_key:
+        messages.error(request, 'Session expired. Please start a new guest session.')
+        return redirect('assessments:guest_access')
+    
+    project = get_object_or_404(
+        Project, 
+        id=project_id, 
+        session_key=request.session.session_key,
+        user=None
+    )
+    tool = get_object_or_404(AssessmentTool, name=tool_name, is_active=True)
+    
+    if request.method == 'POST':
+        form = StudyForm(request.POST)
+        if form.is_valid():
+            study = form.save(commit=False)
+            study.project = project
+            study.save()
+            
+            # Create assessment immediately
+            assessment = Assessment.objects.create(
+                study=study,
+                assessment_tool=tool,
+                assessor_name='Guest User',
+                assessor_email=''
+            )
+            
+            # Create domain assessments
+            domains = tool.domains.all()
+            for domain in domains:
+                DomainAssessment.objects.create(
+                    assessment=assessment,
+                    domain=domain
+                )
+            
+            messages.success(request, f'Study created and {tool.display_name} assessment started!')
+            return redirect('assessments:guest_assessment_detail', assessment_id=assessment.id)
+    else:
+        form = StudyForm()
+    
+    context = {
+        'form': form,
+        'project': project,
+        'tool': tool,
+        'title': f'Add Study - {tool.display_name}'
+    }
+    return render(request, 'assessments/guest_study_form.html', context)
+
+
+def guest_assessment_detail_view(request, assessment_id):
+    """Guest assessment detail view"""
+    if not request.session.session_key:
+        messages.error(request, 'Session expired. Please start a new guest session.')
+        return redirect('assessments:guest_access')
+    
+    assessment = get_object_or_404(
+        Assessment,
+        id=assessment_id,
+        study__project__session_key=request.session.session_key,
+        study__project__user=None
+    )
+    
+    # Get domain assessments with questions
+    domain_assessments = assessment.domain_assessments.select_related(
+        'domain'
+    ).prefetch_related(
+        'domain__signalling_questions',
+        'question_responses__signalling_question'
+    ).order_by('domain__order')
+    
+    # Prepare data structure for template
+    assessment_data = []
+    for domain_assessment in domain_assessments:
+        questions = domain_assessment.domain.signalling_questions.all().order_by('order')
+        responses = {qr.signalling_question_id: qr for qr in domain_assessment.question_responses.all()}
+        
+        questions_data = []
+        for question in questions:
+            response = responses.get(question.id)
+            questions_data.append({
+                'question': question,
+                'response': response
+            })
+        
+        assessment_data.append({
+            'domain_assessment': domain_assessment,
+            'questions': questions_data
+        })
+    
+    context = {
+        'assessment': assessment,
+        'assessment_data': assessment_data,
+        'is_guest': True,
+        'title': f'{assessment.assessment_tool.display_name} Assessment (Guest)'
+    }
+    return render(request, 'assessments/assessment_detail.html', context)
+
+
 def about_view(request):
     """About page with tool information"""
     context = {
@@ -284,6 +446,67 @@ def save_response_view(request, assessment_id):
             Assessment, 
             id=assessment_id, 
             study__project__user=request.user
+        )
+        
+        domain_id = data.get('domain_id')
+        question_id = data.get('question_id')
+        response = data.get('response')
+        justification = data.get('justification', '')
+        
+        domain_assessment = get_object_or_404(
+            DomainAssessment,
+            assessment=assessment,
+            domain_id=domain_id
+        )
+        
+        signalling_question = get_object_or_404(
+            SignallingQuestion,
+            id=question_id,
+            domain_id=domain_id
+        )
+        
+        # Update or create response
+        question_response, created = QuestionResponse.objects.update_or_create(
+            domain_assessment=domain_assessment,
+            signalling_question=signalling_question,
+            defaults={
+                'response': response,
+                'justification': justification
+            }
+        )
+        
+        # Update assessment timestamp
+        assessment.updated_at = timezone.now()
+        assessment.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Response saved successfully'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+
+@require_http_methods(["POST"])
+def guest_save_response_view(request, assessment_id):
+    """Save signalling question response via AJAX for guest users"""
+    try:
+        if not request.session.session_key:
+            return JsonResponse({
+                'success': False,
+                'message': 'Session expired'
+            }, status=400)
+        
+        data = json.loads(request.body)
+        assessment = get_object_or_404(
+            Assessment,
+            id=assessment_id,
+            study__project__session_key=request.session.session_key,
+            study__project__user=None
         )
         
         domain_id = data.get('domain_id')
