@@ -1,6 +1,9 @@
 // Main JavaScript for RoBAss Application
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize dark theme
+    initializeThemeToggle();
+    
     // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -13,14 +16,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Popover(popoverTriggerEl);
     });
 
-    // Auto-hide alerts after 5 seconds
+    // Auto-hide alerts after 8 seconds (extended for better UX)
     setTimeout(function() {
-        const alerts = document.querySelectorAll('.alert');
+        const alerts = document.querySelectorAll('.alert:not(.alert-persistent)');
         alerts.forEach(function(alert) {
             const bsAlert = new bootstrap.Alert(alert);
             bsAlert.close();
         });
-    }, 5000);
+    }, 8000);
 
     // Form validation
     const forms = document.querySelectorAll('.needs-validation');
@@ -39,6 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Project management
     initializeProjectManagement();
+    
+    // Initialize smooth scrolling for navbar
+    initializeSmoothScrolling();
 });
 
 function initializeAssessmentForm() {
@@ -221,10 +227,214 @@ function showToast(message, type = 'info') {
     });
 }
 
+// Global setTheme function
+function setTheme(theme) {
+    const html = document.documentElement;
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    
+    console.log('Setting theme to:', theme);
+    
+    html.setAttribute('data-bs-theme', theme);
+    localStorage.setItem('robass-theme', theme);
+    
+    if (themeIcon) {
+        if (theme === 'dark') {
+            themeIcon.className = 'fas fa-sun';
+            if (themeToggleBtn) {
+                themeToggleBtn.title = 'Switch to Light Theme';
+                themeToggleBtn.setAttribute('aria-label', 'Switch to Light Theme');
+            }
+        } else {
+            themeIcon.className = 'fas fa-moon';
+            if (themeToggleBtn) {
+                themeToggleBtn.title = 'Switch to Dark Theme';
+                themeToggleBtn.setAttribute('aria-label', 'Switch to Dark Theme');
+            }
+        }
+    }
+    
+    // Update theme toggle button styling based on theme
+    if (themeToggleBtn) {
+        const baseClasses = 'btn rounded-circle position-fixed bottom-0 end-0 m-3 shadow-lg';
+        if (theme === 'dark') {
+            themeToggleBtn.className = `${baseClasses} btn-outline-light`;
+        } else {
+            themeToggleBtn.className = `${baseClasses} btn-outline-secondary`;
+        }
+        // Maintain the fixed attributes
+        themeToggleBtn.style.zIndex = '1050';
+        themeToggleBtn.style.width = '50px';
+        themeToggleBtn.style.height = '50px';
+    }
+    
+    console.log('Theme set successfully to:', theme);
+}
+
+// Theme Toggle Functionality
+function initializeThemeToggle() {
+    console.log('Initializing theme toggle...');
+    
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const html = document.documentElement;
+    
+    console.log('Elements found:', {
+        toggleBtn: !!themeToggleBtn,
+        icon: !!themeIcon,
+        html: !!html
+    });
+    
+    if (!themeToggleBtn) {
+        console.error('Theme toggle button not found!');
+        return;
+    }
+    
+    if (!themeIcon) {
+        console.error('Theme icon not found!');
+        return;
+    }
+    
+    // Load saved theme or default to light
+    const savedTheme = localStorage.getItem('robass-theme') || 'light';
+    console.log('Loading saved theme:', savedTheme);
+    setTheme(savedTheme);
+    
+    // Theme toggle button click handler
+    themeToggleBtn.addEventListener('click', function(e) {
+        console.log('Theme toggle clicked!', e);
+        
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        console.log('Switching from', currentTheme, 'to', newTheme);
+        setTheme(newTheme);
+        
+        // Add animation effect
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            this.style.transform = 'scale(1)';
+        }, 150);
+    });
+    
+    console.log('Theme toggle initialized successfully');
+}
+
+// Smooth scrolling for navbar links
+function initializeSmoothScrolling() {
+    // Add active nav link highlighting
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+    const currentLocation = location.pathname;
+    
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentLocation) {
+            link.classList.add('active');
+            link.closest('.nav-item').classList.add('active');
+        }
+    });
+    
+    // Handle navbar collapse on mobile after link click
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    const navbarCollapse = document.querySelector('.navbar-collapse');
+    
+    if (navbarToggler && navbarCollapse) {
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (navbarCollapse.classList.contains('show')) {
+                    navbarToggler.click();
+                }
+            });
+        });
+    }
+}
+
+// Enhanced toast function with theme support
+function showToast(message, type = 'info', duration = 5000) {
+    // Create toast element
+    const toast = document.createElement('div');
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    
+    // Adjust colors for dark theme
+    let toastClass = `toast align-items-center border-0`;
+    let textClass = '';
+    
+    switch(type) {
+        case 'success':
+            toastClass += ' bg-success';
+            textClass = 'text-white';
+            break;
+        case 'error':
+        case 'danger':
+            toastClass += ' bg-danger';
+            textClass = 'text-white';
+            break;
+        case 'warning':
+            toastClass += ' bg-warning';
+            textClass = isDark ? 'text-black' : 'text-dark';
+            break;
+        case 'info':
+        default:
+            toastClass += ' bg-info';
+            textClass = 'text-white';
+            break;
+    }
+    
+    toast.className = `${toastClass} ${textClass}`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    const closeButtonClass = textClass.includes('white') ? 'btn-close-white' : 'btn-close';
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-${
+                    type === 'success' ? 'check-circle' :
+                    type === 'error' || type === 'danger' ? 'exclamation-triangle' :
+                    type === 'warning' ? 'exclamation-circle' : 'info-circle'
+                } me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close ${closeButtonClass} me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    // Add to toast container
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '1060';
+        document.body.appendChild(toastContainer);
+    }
+    
+    toastContainer.appendChild(toast);
+    
+    // Show toast
+    const bsToast = new bootstrap.Toast(toast, {
+        delay: duration
+    });
+    bsToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+        
+        // Remove container if empty
+        if (toastContainer.children.length === 0) {
+            toastContainer.remove();
+        }
+    });
+}
+
 // Export functions for use in other scripts
 window.RoBAss = {
     showToast: showToast,
     updateAssessmentProgress: updateAssessmentProgress,
     autoSaveResponse: autoSaveResponse,
-    autoSaveJustification: autoSaveJustification
+    autoSaveJustification: autoSaveJustification,
+    setTheme: setTheme,
+    initializeThemeToggle: initializeThemeToggle
 };

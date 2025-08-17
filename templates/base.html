@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,43 +15,91 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     
+    <!-- Inline CSS for Theme Toggle -->
+    <style>
+        #theme-toggle {
+            width: 50px !important;
+            height: 50px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.3s ease !important;
+            z-index: 1050 !important;
+            position: fixed !important;
+            bottom: 1rem !important;
+            right: 1rem !important;
+        }
+        
+        #theme-toggle:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        #theme-toggle i {
+            font-size: 1.2rem !important;
+        }
+        
+        /* Ensure button is visible above other elements */
+        #theme-toggle {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        }
+    </style>
+    
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+        <div class="container-fluid px-3">
             <a class="navbar-brand fw-bold" href="{% url 'assessments:home' %}">
                 <i class="fas fa-clipboard-check me-2"></i>
-                RoBAss
+                <span class="d-none d-md-inline">RoBAss</span>
+                <span class="d-md-none">RoB</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'assessments:home' %}">Home</a>
+                        <a class="nav-link" href="{% url 'assessments:home' %}">
+                            <i class="fas fa-home me-1"></i>
+                            <span class="d-lg-inline d-none">Home</span>
+                        </a>
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'assessments:dashboard' %}">Dashboard</a>
+                        <a class="nav-link" href="{% url 'assessments:dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i>
+                            <span class="d-lg-inline d-none">Dashboard</span>
+                        </a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Assessments
+                            <i class="fas fa-clipboard-list me-1"></i>
+                            <span class="d-lg-inline d-none">Assessments</span>
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'assessments:tool_selection' %}">New Assessment</a></li>
-                            <li><a class="dropdown-item" href="{% url 'assessments:project_list' %}">My Projects</a></li>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{% url 'assessments:tool_selection' %}">
+                                <i class="fas fa-plus me-2"></i>New Assessment
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'assessments:project_list' %}">
+                                <i class="fas fa-folder-open me-2"></i>My Projects
+                            </a></li>
                         </ul>
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'assessments:tutorial' %}">Tutorial</a>
+                        <a class="nav-link" href="{% url 'assessments:tutorial' %}">
+                            <i class="fas fa-graduation-cap me-1"></i>
+                            <span class="d-lg-inline d-none">Tutorial</span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'assessments:about' %}">About</a>
+                        <a class="nav-link" href="{% url 'assessments:about' %}">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <span class="d-lg-inline d-none">About</span>
+                        </a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
@@ -59,23 +107,36 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-1"></i>
-                            {{ user.get_full_name|default:user.username }}
+                            <span class="d-lg-inline d-none">{{ user.get_full_name|default:user.username }}</span>
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            <span class="d-lg-inline d-none">Login</span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
+                        <a class="nav-link" href="{% url 'accounts:register' %}">
+                            <i class="fas fa-user-plus me-1"></i>
+                            <span class="d-lg-inline d-none">Register</span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'assessments:guest_access' %}">Guest Access</a>
+                        <a class="nav-link" href="{% url 'assessments:guest_access' %}">
+                            <i class="fas fa-user-clock me-1"></i>
+                            <span class="d-lg-inline d-none">Guest</span>
+                        </a>
                     </li>
                     {% endif %}
                 </ul>
@@ -96,40 +157,50 @@
     {% endif %}
 
     <!-- Main Content -->
-    <main class="container-fluid py-4">
-        {% block content %}
-        {% endblock %}
+    <main class="flex-grow-1 py-4" style="padding-top: 80px !important;">
+        <div class="container-fluid">
+            {% block content %}
+            {% endblock %}
+        </div>
     </main>
 
+    <!-- Dark Theme Toggle -->
+    <button id="theme-toggle" class="btn btn-outline-secondary rounded-circle position-fixed bottom-0 end-0 m-3 shadow-lg" 
+            style="z-index: 1050; width: 50px; height: 50px;" 
+            title="Toggle Dark/Light Theme"
+            aria-label="Toggle Dark/Light Theme">
+        <i class="fas fa-moon" id="theme-icon"></i>
+    </button>
+
     <!-- Footer -->
-    <footer class="bg-light py-4 mt-5">
+    <footer class="bg-body-secondary py-4 mt-auto">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5>RoBAss</h5>
-                    <p class="text-muted">Comprehensive Risk of Bias Assessment Tool for Health Research</p>
+                    <h5 class="text-body">RoBAss</h5>
+                    <p class="text-body-secondary">Comprehensive Risk of Bias Assessment Tool for Health Research</p>
                 </div>
                 <div class="col-md-3">
-                    <h6>Tools</h6>
+                    <h6 class="text-body">Tools</h6>
                     <ul class="list-unstyled">
-                        <li><small><a href="#" class="text-decoration-none">RoB 2.0</a></small></li>
-                        <li><small><a href="#" class="text-decoration-none">ROBINS-I</a></small></li>
-                        <li><small><a href="#" class="text-decoration-none">AMSTAR-2</a></small></li>
+                        <li><small><a href="#" class="text-decoration-none link-body-emphasis">RoB 2.0</a></small></li>
+                        <li><small><a href="#" class="text-decoration-none link-body-emphasis">ROBINS-I</a></small></li>
+                        <li><small><a href="#" class="text-decoration-none link-body-emphasis">AMSTAR-2</a></small></li>
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h6>Help</h6>
+                    <h6 class="text-body">Help</h6>
                     <ul class="list-unstyled">
-                        <li><small><a href="#" class="text-decoration-none">Documentation</a></small></li>
-                        <li><small><a href="#" class="text-decoration-none">Contact</a></small></li>
-                        <li><small><a href="#" class="text-decoration-none">GitHub</a></small></li>
+                        <li><small><a href="#" class="text-decoration-none link-body-emphasis">Documentation</a></small></li>
+                        <li><small><a href="#" class="text-decoration-none link-body-emphasis">Contact</a></small></li>
+                        <li><small><a href="#" class="text-decoration-none link-body-emphasis">GitHub</a></small></li>
                     </ul>
                 </div>
             </div>
-            <hr>
+            <hr class="border-body-emphasis">
             <div class="row">
                 <div class="col-12 text-center">
-                    <small class="text-muted">
+                    <small class="text-body-secondary">
                         © {% now "Y" %} RoBAss. Developed for the research community.
                     </small>
                 </div>
@@ -142,6 +213,86 @@
     
     <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Inline Theme Toggle (Debugging) -->
+    <script>
+    console.log('Inline theme toggle script loaded');
+    
+    // Simple theme toggle function
+    function toggleTheme() {
+        console.log('toggleTheme called');
+        const html = document.documentElement;
+        const themeIcon = document.getElementById('theme-icon');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        
+        const currentTheme = html.getAttribute('data-bs-theme') || 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        console.log('Switching from', currentTheme, 'to', newTheme);
+        
+        // Update theme
+        html.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem('robass-theme', newTheme);
+        
+        // Update icon and button
+        if (themeIcon) {
+            themeIcon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        if (themeToggleBtn) {
+            themeToggleBtn.className = `btn ${newTheme === 'dark' ? 'btn-outline-light' : 'btn-outline-secondary'} rounded-circle position-fixed bottom-0 end-0 m-3 shadow-lg`;
+            themeToggleBtn.title = newTheme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme';
+        }
+        
+        console.log('Theme switched to:', newTheme);
+    }
+    
+    // Initialize on DOM load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded for theme toggle');
+        
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        console.log('Theme toggle elements:', {
+            btn: themeToggleBtn ? 'found' : 'NOT FOUND',
+            icon: themeIcon ? 'found' : 'NOT FOUND'
+        });
+        
+        if (themeToggleBtn) {
+            // Add click event
+            themeToggleBtn.addEventListener('click', function(e) {
+                console.log('Theme button clicked!', e);
+                e.preventDefault();
+                toggleTheme();
+                
+                // Visual feedback
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+            
+            // Load saved theme
+            const savedTheme = localStorage.getItem('robass-theme') || 'light';
+            console.log('Loading saved theme:', savedTheme);
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            
+            if (themeIcon) {
+                themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+            themeToggleBtn.className = `btn ${savedTheme === 'dark' ? 'btn-outline-light' : 'btn-outline-secondary'} rounded-circle position-fixed bottom-0 end-0 m-3 shadow-lg`;
+            themeToggleBtn.title = savedTheme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme';
+            
+            console.log('Theme toggle initialized successfully');
+        } else {
+            console.error('Theme toggle button not found in DOM!');
+        }
+    });
+    
+    // Make function available globally for testing
+    window.toggleTheme = toggleTheme;
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

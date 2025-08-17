@@ -1,0 +1,228 @@
+{% extends 'assessments/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'assessments:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'assessments:project_detail' project.id %}">{{ project.name }}</a></li>
+                    <li class="breadcrumb-item active">Confirm Study Details</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>{{ title }}
+                    </h4>
+                    <small class="opacity-75">Step 2 of 4: Confirm and edit extracted metadata</small>
+                </div>
+                <div class="card-body">
+                    <!-- Processing Results -->
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle me-2"></i>Processing Complete!</h6>
+                        <div class="row">
+                            {% if has_pdf %}
+                            <div class="col-md-4">
+                                <i class="fas fa-file-pdf text-danger me-2"></i>
+                                <strong>PDF:</strong> Uploaded & processed
+                            </div>
+                            {% endif %}
+                            {% if pmid %}
+                            <div class="col-md-4">
+                                <i class="fas fa-database text-primary me-2"></i>
+                                <strong>PMID:</strong> {{ pmid }}
+                            </div>
+                            {% endif %}
+                            {% if doi %}
+                            <div class="col-md-4">
+                                <i class="fas fa-link text-info me-2"></i>
+                                <strong>DOI:</strong> {{ doi }}
+                            </div>
+                            {% endif %}
+                            {% if extracted_text_length %}
+                            <div class="col-md-4 mt-2">
+                                <i class="fas fa-text-width text-secondary me-2"></i>
+                                <strong>Extracted text:</strong> {{ extracted_text_length:,}} characters
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form method="post" action="{% url 'assessments:select_assessment_method' project.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="update_metadata" value="true">
+                        
+                        <h5 class="mb-3">Study Metadata</h5>
+                        <p class="text-muted">Please review and edit the extracted metadata as needed:</p>
+
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">
+                                        <i class="fas fa-heading me-2"></i>Title *
+                                    </label>
+                                    <textarea class="form-control" id="title" name="title" rows="3" required>{{ metadata.title|default:"" }}</textarea>
+                                    <small class="form-text text-muted">Full title of the study</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="authors" class="form-label">
+                                        <i class="fas fa-users me-2"></i>Authors
+                                    </label>
+                                    <input type="text" class="form-control" id="authors" name="authors" value="{{ metadata.authors|default:"" }}">
+                                    <small class="form-text text-muted">Author names (e.g., Smith J, Jones P, Brown A)</small>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="journal" class="form-label">
+                                                <i class="fas fa-book-open me-2"></i>Journal
+                                            </label>
+                                            <input type="text" class="form-control" id="journal" name="journal" value="{{ metadata.journal|default:"" }}">
+                                            <small class="form-text text-muted">Publication journal</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="year" class="form-label">
+                                                <i class="fas fa-calendar me-2"></i>Year
+                                            </label>
+                                            <input type="number" class="form-control" id="year" name="year" value="{{ metadata.year|default:"" }}" min="1900" max="2030">
+                                            <small class="form-text text-muted">Publication year</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="pmid_confirm" class="form-label">
+                                                <i class="fas fa-database me-2"></i>PMID
+                                            </label>
+                                            <input type="text" class="form-control" id="pmid_confirm" name="pmid" value="{{ pmid }}">
+                                            <small class="form-text text-muted">PubMed ID</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="doi_confirm" class="form-label">
+                                                <i class="fas fa-link me-2"></i>DOI
+                                            </label>
+                                            <input type="text" class="form-control" id="doi_confirm" name="doi" value="{{ doi }}">
+                                            <small class="form-text text-muted">Digital Object Identifier</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="study_design" class="form-label">
+                                        <i class="fas fa-project-diagram me-2"></i>Study Design
+                                    </label>
+                                    <select class="form-select" id="study_design" name="study_design">
+                                        <option value="">Select study design</option>
+                                        <option value="RCT" {% if metadata.study_design == "RCT" %}selected{% endif %}>Randomized Controlled Trial</option>
+                                        <option value="Cohort" {% if metadata.study_design == "Cohort" %}selected{% endif %}>Cohort Study</option>
+                                        <option value="Case-control" {% if metadata.study_design == "Case-control" %}selected{% endif %}>Case-Control Study</option>
+                                        <option value="Cross-sectional" {% if metadata.study_design == "Cross-sectional" %}selected{% endif %}>Cross-Sectional Study</option>
+                                        <option value="Case series" {% if metadata.study_design == "Case series" %}selected{% endif %}>Case Series</option>
+                                        <option value="Systematic review" {% if metadata.study_design == "Systematic review" %}selected{% endif %}>Systematic Review</option>
+                                        <option value="Meta-analysis" {% if metadata.study_design == "Meta-analysis" %}selected{% endif %}>Meta-Analysis</option>
+                                        <option value="Other" {% if metadata.study_design == "Other" %}selected{% endif %}>Other</option>
+                                    </select>
+                                    <small class="form-text text-muted">Type of study design</small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Metadata Sources</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled mb-0 small">
+                                            {% if pmid %}
+                                            <li class="mb-2">
+                                                <i class="fas fa-database text-primary me-2"></i>
+                                                Data retrieved from PubMed (PMID: {{ pmid }})
+                                            </li>
+                                            {% endif %}
+                                            {% if doi %}
+                                            <li class="mb-2">
+                                                <i class="fas fa-link text-info me-2"></i>
+                                                Data retrieved via DOI lookup
+                                            </li>
+                                            {% endif %}
+                                            {% if has_pdf %}
+                                            <li class="mb-2">
+                                                <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                Additional data extracted from PDF
+                                            </li>
+                                            {% endif %}
+                                            <li class="text-muted">
+                                                <i class="fas fa-edit me-2"></i>
+                                                You can modify any field above
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                {% if extracted_text_length %}
+                                <div class="card bg-light mt-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-text-width me-2"></i>Text Extraction</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fas fa-check-circle text-success fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <strong>{{ extracted_text_length:,}} characters</strong><br>
+                                                <small class="text-muted">Successfully extracted from PDF</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'assessments:enhanced_upload' project.id %}?tool={{ tool.name }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                Next: Choose Assessment Method <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-resize textarea for title
+    const titleTextarea = document.getElementById('title');
+    if (titleTextarea) {
+        titleTextarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+        // Initial resize
+        titleTextarea.style.height = titleTextarea.scrollHeight + 'px';
+    }
+});
+</script>
+{% endblock %}

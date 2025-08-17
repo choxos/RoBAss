@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }} - RoBAss{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6 fw-bold mb-2">{{ project.name }}</h1>
+            {% if project.description %}
+                <p class="lead text-muted mb-0">{{ project.description }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{% url 'assessments:project_list' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Projects
+            </a>
+            <div class="dropdown">
+                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-plus me-2"></i>
+                    Add Study
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'assessments:enhanced_study_create' project_id=project.id %}?tool=rob2_parallel">
+                            <i class="fas fa-magic me-2 text-success"></i>
+                            <strong>Enhanced (RoB 2.0)</strong>
+                            <br><small class="text-muted">PDF upload + AI assistance</small>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'assessments:study_create' project_id=project.id %}">
+                            <i class="fas fa-plus me-2 text-muted"></i>
+                            Basic Study Entry
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Statistics -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-book fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ studies.count }}</h3>
+                    <small>Studies</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-check fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ recent_assessments.count }}</h3>
+                    <small>Assessments</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar fa-2x mb-2"></i>
+                    <div class="mb-0"><small>Created</small></div>
+                    <small>{{ project.created_at|date:"M d, Y" }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning text-dark">
+                <div class="card-body text-center">
+                    <i class="fas fa-download fa-2x mb-2"></i>
+                    <div class="mb-2">
+                        <a href="{% url 'assessments:export_csv' project_id=project.id %}" class="btn btn-sm btn-outline-dark">
+                            <i class="fas fa-download me-1"></i>
+                            CSV Export
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Studies List -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-book me-2"></i>
+                            Studies ({{ studies.count }})
+                        </h5>
+                        {% if studies.count > 0 %}
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-filter me-1"></i>
+                                Filter
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">All Studies</a></li>
+                                <li><a class="dropdown-item" href="#">With Assessments</a></li>
+                                <li><a class="dropdown-item" href="#">Without Assessments</a></li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if studies %}
+                        {% for study in studies %}
+                        <div class="border-bottom p-4{% if forloop.last %} border-bottom-0{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <a href="{% url 'assessments:study_metadata' study_id=study.id %}" class="text-decoration-none">
+                                            {{ study.title|truncatechars:100 }}
+                                        </a>
+                                    </h6>
+                                    
+                                    <div class="text-muted small mb-2">
+                                        {% if study.authors %}
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ study.authors|truncatechars:50 }}
+                                        {% endif %}
+                                        
+                                        {% if study.journal %}
+                                            {% if study.authors %} • {% endif %}
+                                            <i class="fas fa-newspaper me-1"></i>
+                                            {{ study.journal }}
+                                        {% endif %}
+                                        
+                                        {% if study.year %}
+                                            {% if study.authors or study.journal %} • {% endif %}
+                                            {{ study.year }}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="d-flex align-items-center">
+                                        {% if study.assessment_count > 0 %}
+                                            <span class="badge bg-success me-2">
+                                                {{ study.assessment_count }} assessment{{ study.assessment_count|pluralize }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-outline-secondary me-2">No assessments</span>
+                                        {% endif %}
+
+                                        {% if study.doi %}
+                                            <span class="badge bg-info me-1">DOI</span>
+                                        {% endif %}
+                                        
+                                        {% if study.pmid %}
+                                            <span class="badge bg-info me-1">PMID</span>
+                                        {% endif %}
+                                        
+                                        {% if study.documents.count > 0 %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-file-pdf me-1"></i>
+                                                {{ study.documents.count }} doc{{ study.documents.count|pluralize }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="ms-3">
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {% if study.assessment_count > 0 %}
+                                                {% for assessment in study.assessments.all %}
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'assessments:assessment_detail' assessment_id=assessment.id %}">
+                                                        <i class="fas fa-clipboard-check me-2 text-primary"></i>
+                                                        {{ assessment.assessment_tool.display_name }}
+                                                    </a>
+                                                </li>
+                                                {% endfor %}
+                                                <li><hr class="dropdown-divider"></li>
+                                            {% endif %}
+                                            
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'assessments:assessment_create' study_id=study.id tool_name='rob2_parallel' %}">
+                                                    <i class="fas fa-plus me-2 text-success"></i>
+                                                    New RoB 2.0 Assessment
+                                                </a>
+                                            </li>
+                                            
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'assessments:study_metadata' study_id=study.id %}">
+                                                    <i class="fas fa-edit me-2 text-warning"></i>
+                                                    Edit Metadata
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                Created {{ study.created_at|timesince }} ago
+                                {% if study.updated_at != study.created_at %}
+                                    • Updated {{ study.updated_at|timesince }} ago
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Studies Added Yet</h5>
+                            <p class="text-muted mb-4">Start by adding your first study to this project.</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'assessments:enhanced_study_create' project_id=project.id %}?tool=rob2_parallel" class="btn btn-success">
+                                    <i class="fas fa-magic me-2"></i>
+                                    Enhanced Study Entry
+                                </a>
+                                <a href="{% url 'assessments:study_create' project_id=project.id %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Basic Entry
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Sidebar -->
+        <div class="col-lg-4">
+            <!-- Recent Assessments -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Recent Activity
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_assessments %}
+                        {% for assessment in recent_assessments %}
+                        <div class="d-flex align-items-center mb-3{% if not forloop.last %} border-bottom pb-3{% endif %}">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="fas fa-clipboard-check text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small">{{ assessment.assessment_tool.display_name }}</div>
+                                <div class="text-muted small">{{ assessment.study.title|truncatechars:40 }}</div>
+                                <div class="text-muted small">{{ assessment.updated_at|timesince }} ago</div>
+                            </div>
+                            <a href="{% url 'assessments:assessment_detail' assessment_id=assessment.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-clipboard fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0 small">No assessments started yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Project Info -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Project Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong class="small">Created:</strong><br>
+                        <span class="text-muted">{{ project.created_at|date:"F d, Y \a\t g:i A" }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong class="small">Last Updated:</strong><br>
+                        <span class="text-muted">{{ project.updated_at|date:"F d, Y \a\t g:i A" }}</span>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <strong class="small">Owner:</strong><br>
+                        <span class="text-muted">{{ project.user.get_full_name|default:project.user.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

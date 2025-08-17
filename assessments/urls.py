@@ -22,11 +22,22 @@ urlpatterns = [
     
     # Study management
     path('projects/<uuid:project_id>/studies/new/', views.study_create_view, name='study_create'),
+    path('projects/<uuid:project_id>/studies/new/enhanced/', views.enhanced_study_create_view, name='enhanced_study_create'),
+    
+    # Enhanced workflow for PDF upload and assessment
+    path('projects/<uuid:project_id>/upload/', views.enhanced_upload_view, name='enhanced_upload'),
+    path('projects/<uuid:project_id>/process-upload/', views.process_upload_view, name='process_upload'),
+    path('projects/<uuid:project_id>/select-method/', views.select_assessment_method_view, name='select_assessment_method'),
+    path('projects/<uuid:project_id>/create-study/', views.create_study_with_assessment_view, name='create_study_with_assessment'),
+    
+    path('studies/<int:study_id>/metadata/', views.study_metadata_view, name='study_metadata'),
     
     # Assessment management
     path('studies/<int:study_id>/assess/<str:tool_name>/', views.assessment_create_view, name='assessment_create'),
     path('assessments/<int:assessment_id>/', views.assessment_detail_view, name='assessment_detail'),
     path('assessments/<int:assessment_id>/save/', views.save_response_view, name='save_response'),
+    path('assessments/<int:assessment_id>/calculate-domain/', views.calculate_domain_assessment_view, name='calculate_domain'),
+    path('assessments/<int:assessment_id>/text-hints/', views.text_hints_view, name='text_hints'),
     
     # Guest workflows
     path('guest/project/new/', views.guest_project_create_view, name='guest_project_create'),

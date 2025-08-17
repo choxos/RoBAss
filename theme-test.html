@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Toggle Test</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        [data-bs-theme="dark"] {
+            --bs-body-bg: #121212;
+            --bs-body-color: #e0e0e0;
+        }
+        
+        #theme-toggle {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1050;
+        }
+        
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">RoBAss Test</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow-1 p-4">
+        <div class="container">
+            <h1>Theme Toggle Test</h1>
+            <p>This page tests the dark theme toggle functionality.</p>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Test Card</h5>
+                    <p class="card-text">This card should change appearance when you toggle the theme.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Dark Theme Toggle -->
+    <button id="theme-toggle" class="btn btn-outline-secondary rounded-circle position-fixed bottom-0 end-0 m-3 shadow-lg" 
+            title="Toggle Dark/Light Theme">
+        <i class="fas fa-moon" id="theme-icon"></i>
+    </button>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        console.log('Test page loaded');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const html = document.documentElement;
+            
+            console.log('Elements:', { btn: !!themeToggleBtn, icon: !!themeIcon, html: !!html });
+            
+            if (!themeToggleBtn || !themeIcon) {
+                console.error('Elements not found!');
+                return;
+            }
+            
+            // Load saved theme
+            const savedTheme = localStorage.getItem('robass-theme') || 'light';
+            console.log('Saved theme:', savedTheme);
+            setTheme(savedTheme);
+            
+            // Add click handler
+            themeToggleBtn.addEventListener('click', function(e) {
+                console.log('Button clicked!', e);
+                const currentTheme = html.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                console.log('Switching from', currentTheme, 'to', newTheme);
+                setTheme(newTheme);
+                
+                // Visual feedback
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+            
+            function setTheme(theme) {
+                console.log('Setting theme to:', theme);
+                html.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('robass-theme', theme);
+                
+                if (theme === 'dark') {
+                    themeIcon.className = 'fas fa-sun';
+                    themeToggleBtn.title = 'Switch to Light Theme';
+                    themeToggleBtn.className = 'btn btn-outline-light rounded-circle position-fixed bottom-0 end-0 m-3 shadow-lg';
+                } else {
+                    themeIcon.className = 'fas fa-moon';
+                    themeToggleBtn.title = 'Switch to Dark Theme';
+                    themeToggleBtn.className = 'btn btn-outline-secondary rounded-circle position-fixed bottom-0 end-0 m-3 shadow-lg';
+                }
+                console.log('Theme set to:', theme);
+            }
+            
+            console.log('Theme toggle initialized');
+        });
+    </script>
+</body>
+</html>

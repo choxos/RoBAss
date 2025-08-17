@@ -9,10 +9,12 @@
     {% csrf_token %}
     
     {% for item in assessment_data %}
-      <div class="card mb-4">
+      <div class="card mb-4" data-domain-id="{{ item.domain_assessment.domain.id }}">
         <div class="card-header bg-light">
           <strong>{{ item.domain_assessment.domain.order }}. {{ item.domain_assessment.domain.name }}</strong>
-          <span class="badge bg-secondary float-end">Domain Rating: {{ item.domain_assessment.get_bias_rating_display|default:'-' }}</span>
+          <span class="badge bg-secondary float-end domain-rating-badge" id="domain-{{ item.domain_assessment.domain.id }}-rating">
+            Domain Rating: <span class="rating-text">{{ item.domain_assessment.get_bias_rating_display|default:'-' }}</span>
+          </span>
         </div>
         <div class="card-body">
           <p>{{ item.domain_assessment.domain.description }}</p>
@@ -20,16 +22,24 @@
           <table class="table table-sm align-middle">
             <thead>
               <tr>
-                <th style="width: 5%">#</th>
-                <th style="width: 55%">Signalling Question</th>
-                <th style="width: 20%">Response</th>
-                <th style="width: 20%">Justification</th>
+                <th style="width: 3%">#</th>
+                <th style="width: 2%"></th>
+                <th style="width: 50%">Signalling Question</th>
+                <th style="width: 22%">Response</th>
+                <th style="width: 23%">Justification</th>
               </tr>
             </thead>
             <tbody>
               {% for qdata in item.questions %}
                 <tr data-domain-id="{{ item.domain_assessment.domain.id }}" data-question-id="{{ qdata.question.id }}">
                   <td>{{ qdata.question.order }}</td>
+                  <td>
+                    {% if qdata.question.explanation %}
+                      <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true" title="{{ qdata.question.explanation }}">
+                        <i class="fas fa-info-circle"></i>
+                      </button>
+                    {% endif %}
+                  </td>
                   <td>{{ qdata.question.question_text }}</td>
                   <td>
                     <select class="form-select form-select-sm response-select">
@@ -47,6 +57,32 @@
             </tbody>
           </table>
 
+          <!-- Text hints from PDF analysis -->
+          {% if assessment.study.documents.exists %}
+            <div class="mt-3">
+              <div class="card border-info">
+                <div class="card-header bg-info bg-opacity-10">
+                  <h6 class="mb-0"><i class="fas fa-lightbulb text-info"></i> Relevant Text from Article</h6>
+                </div>
+                <div class="card-body">
+                  <div class="text-hints-container" id="text-hints-{{ item.domain_assessment.domain.id }}">
+                    <!-- Domain-specific text hints will be populated here via JavaScript -->
+                    <div class="text-muted"><i class="fas fa-search"></i> Analyzing text for relevant content...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Auto-calculated domain rating section -->
+          <div class="mt-3">
+            <div class="alert alert-info auto-rating-section" id="auto-rating-{{ item.domain_assessment.domain.id }}" style="display: none;">
+              <h6><i class="fas fa-robot"></i> Automatic Assessment</h6>
+              <p><strong>Risk Level:</strong> <span class="auto-risk-level"></span></p>
+              <p><strong>Reasoning:</strong> <span class="auto-reasoning"></span></p>
+            </div>
+          </div>
+
           <div class="mt-3">
             <label><strong>Domain bias rating</strong></label>
             <select class="form-select domain-bias-select" data-domain-id="{{ item.domain_assessment.domain.id }}">
@@ -61,6 +97,26 @@
       </div>
     {% endfor %}
 
+    <!-- Overall Assessment Section -->
+    <div class="card mb-4 border-primary">
+      <div class="card-header bg-primary text-white">
+        <strong><i class="fas fa-chart-line"></i> Overall Risk of Bias Assessment</strong>
+        <span class="badge bg-light text-dark float-end" id="overall-rating-badge">
+          Overall Rating: <span class="overall-rating-text">{{ assessment.overall_bias|default:'-' }}</span>
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning" id="overall-auto-assessment" style="display: none;">
+          <h6><i class="fas fa-calculator"></i> Automatic Overall Assessment</h6>
+          <p><strong>Risk Level:</strong> <span class="overall-risk-level"></span></p>
+          <p><strong>Reasoning:</strong> <span class="overall-reasoning"></span></p>
+        </div>
+        <div class="text-muted" id="overall-incomplete" style="{% if assessment.overall_bias %}display: none;{% endif %}">
+          <p><i class="fas fa-clock"></i> Complete all domain assessments to see the overall risk assessment.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="text-end mb-5">
       <button type="button" class="btn btn-primary" id="save-assessment-btn">Save All Responses</button>
     </div>
@@ -71,6 +127,18 @@
   const csrftoken = '{{ csrf_token }}';
   const assessmentId = '{{ assessment.id }}';
   const isGuest = {% if is_guest %}true{% else %}false{% endif %};
+  const isRob2 = {% if assessment.assessment_tool.name == 'rob2_parallel' %}true{% else %}false{% endif %};
+
+  // Initialize tooltips
+  document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl, {
+        html: true,
+        delay: { show: 500, hide: 100 }
+      });
+    });
+  });
 
   function saveResponse(domainId, questionId, response, justification) {
     const saveUrl = isGuest ? 
@@ -87,10 +155,159 @@
     }).then(r => r.json()).then(data => {
       if (!data.success) {
         console.error(data.message);
+      } else {
+        // After saving, calculate domain assessment if RoB 2.0
+        if (isRob2 && !isGuest) {
+          calculateDomainAssessment(domainId);
+        }
       }
     }).catch(err => console.error(err));
   }
 
+  function calculateDomainAssessment(domainId) {
+    // Collect all responses for this domain
+    const domainCard = document.querySelector(`[data-domain-id="${domainId}"]`);
+    if (!domainCard) return;
+    
+    const responses = {};
+    domainCard.querySelectorAll('tr[data-question-id]').forEach(row => {
+      const questionId = row.dataset.questionId;
+      const response = row.querySelector('.response-select').value;
+      if (response) {
+        responses[questionId] = response;
+      }
+    });
+    
+    if (Object.keys(responses).length === 0) return;
+    
+    fetch(`/assessments/${assessmentId}/calculate-domain/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify({ 
+        domain_id: domainId, 
+        responses: responses 
+      })
+    }).then(r => r.json()).then(data => {
+      if (data.success && data.domain_result) {
+        updateDomainRating(domainId, data.domain_result);
+      }
+    }).catch(err => console.error('Domain calculation error:', err));
+  }
+
+  function updateDomainRating(domainId, result) {
+    // Update the domain rating badge
+    const ratingBadge = document.getElementById(`domain-${domainId}-rating`);
+    if (ratingBadge) {
+      const ratingText = ratingBadge.querySelector('.rating-text');
+      if (ratingText) {
+        ratingText.textContent = result.risk;
+        
+        // Update badge color based on risk level
+        ratingBadge.className = 'badge float-end domain-rating-badge';
+        if (result.risk === 'Low') {
+          ratingBadge.classList.add('bg-success');
+        } else if (result.risk === 'Some concerns') {
+          ratingBadge.classList.add('bg-warning', 'text-dark');
+        } else if (result.risk === 'High') {
+          ratingBadge.classList.add('bg-danger');
+        } else {
+          ratingBadge.classList.add('bg-secondary');
+        }
+      }
+    }
+    
+    // Show the automatic assessment section
+    const autoSection = document.getElementById(`auto-rating-${domainId}`);
+    if (autoSection) {
+      autoSection.style.display = 'block';
+      autoSection.querySelector('.auto-risk-level').textContent = result.risk;
+      autoSection.querySelector('.auto-reasoning').textContent = result.reasoning;
+    }
+    
+    // Suggest the domain bias rating
+    const domainSelect = document.querySelector(`.domain-bias-select[data-domain-id="${domainId}"]`);
+    if (domainSelect) {
+      const mappedValue = result.risk === 'Low' ? 'low' : 
+                          result.risk === 'Some concerns' ? 'some_concerns' : 
+                          result.risk === 'High' ? 'high' : '';
+      if (mappedValue && domainSelect.value === '') {
+        domainSelect.value = mappedValue;
+        domainSelect.style.borderColor = '#198754'; // Green border to indicate auto-filled
+      }
+    }
+    
+    // Check if we should calculate overall assessment
+    calculateOverallAssessment();
+  }
+
+  function calculateOverallAssessment() {
+    // Check if all domains have ratings
+    const domainCards = document.querySelectorAll('[data-domain-id]');
+    const domainRatings = [];
+    let allComplete = true;
+    
+    domainCards.forEach(card => {
+      const domainId = card.dataset.domainId;
+      const ratingBadge = document.getElementById(`domain-${domainId}-rating`);
+      if (ratingBadge) {
+        const ratingText = ratingBadge.querySelector('.rating-text').textContent.trim();
+        if (ratingText && ratingText !== '-') {
+          domainRatings.push(ratingText);
+        } else {
+          allComplete = false;
+        }
+      }
+    });
+    
+    if (allComplete && domainRatings.length === domainCards.length) {
+      // Calculate overall assessment
+      let overallRisk = 'Low';
+      let reasoning = 'Low risk of bias across all domains';
+      
+      const highCount = domainRatings.filter(r => r === 'High').length;
+      const someCount = domainRatings.filter(r => r === 'Some concerns').length;
+      
+      if (highCount >= 1) {
+        overallRisk = 'High';
+        reasoning = 'High risk of bias in at least one domain';
+      } else if (someCount >= 3) {
+        overallRisk = 'High';
+        reasoning = 'Some concerns in multiple domains substantially lower confidence';
+      } else if (someCount > 0) {
+        overallRisk = 'Some concerns';
+        reasoning = 'Some concerns identified but not high risk';
+      }
+      
+      // Update overall assessment display
+      const overallBadge = document.getElementById('overall-rating-badge');
+      const overallText = overallBadge.querySelector('.overall-rating-text');
+      overallText.textContent = overallRisk;
+      
+      // Update badge color
+      overallBadge.className = 'badge float-end';
+      if (overallRisk === 'Low') {
+        overallBadge.classList.add('bg-success');
+      } else if (overallRisk === 'Some concerns') {
+        overallBadge.classList.add('bg-warning', 'text-dark');
+      } else {
+        overallBadge.classList.add('bg-danger');
+      }
+      
+      // Show overall auto assessment
+      const overallAutoSection = document.getElementById('overall-auto-assessment');
+      overallAutoSection.style.display = 'block';
+      overallAutoSection.querySelector('.overall-risk-level').textContent = overallRisk;
+      overallAutoSection.querySelector('.overall-reasoning').textContent = reasoning;
+      
+      // Hide incomplete message
+      document.getElementById('overall-incomplete').style.display = 'none';
+    }
+  }
+
+  // Event listeners
   document.querySelectorAll('.response-select').forEach(sel => {
     sel.addEventListener('change', (e) => {
       const row = e.target.closest('tr');
@@ -115,6 +332,81 @@
 
   document.getElementById('save-assessment-btn').addEventListener('click', () => {
     alert('All responses have been saved automatically when edited.');
+  });
+
+  // Load text hints for domains
+  function loadTextHints() {
+    fetch(`/assessments/${assessmentId}/text-hints/`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          const domainHints = {
+            '1': data.randomization || [],
+            '2': data.blinding || [],
+            '3': data.missing_data || [],
+            '4': data.outcome_measurement || [],
+            '5': data.selective_reporting || []
+          };
+          
+          // Display hints for each domain
+          document.querySelectorAll('[data-domain-id]').forEach(card => {
+            const domainId = card.dataset.domainId;
+            const domain = card.querySelector('.card-header strong').textContent.split('.')[0];
+            const hintsContainer = document.getElementById(`text-hints-${domainId}`);
+            
+            if (hintsContainer && domainHints[domain]) {
+              const hints = domainHints[domain];
+              
+              if (hints.length > 0) {
+                let hintsHtml = '<div class="text-hints">';
+                hints.slice(0, 3).forEach((hint, index) => {
+                  hintsHtml += `
+                    <div class="border-start border-info ps-3 mb-2 small">
+                      <i class="fas fa-quote-left text-muted me-1"></i>
+                      ${hint}
+                      <i class="fas fa-quote-right text-muted ms-1"></i>
+                    </div>
+                  `;
+                });
+                if (hints.length > 3) {
+                  hintsHtml += `<div class="text-muted small">... and ${hints.length - 3} more relevant excerpts</div>`;
+                }
+                hintsHtml += '</div>';
+                hintsContainer.innerHTML = hintsHtml;
+              } else {
+                hintsContainer.innerHTML = '<div class="text-muted small"><i class="fas fa-info-circle"></i> No specific text found for this domain.</div>';
+              }
+            }
+          });
+        } else {
+          // Hide text hints containers if no data available
+          document.querySelectorAll('.text-hints-container').forEach(container => {
+            container.innerHTML = '<div class="text-muted small"><i class="fas fa-info-circle"></i> No text analysis available.</div>';
+          });
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to load text hints:', err);
+        document.querySelectorAll('.text-hints-container').forEach(container => {
+          container.innerHTML = '<div class="text-muted small"><i class="fas fa-exclamation-triangle"></i> Text analysis unavailable.</div>';
+        });
+      });
+  }
+
+  // Initialize domain calculations on page load for existing responses
+  document.addEventListener('DOMContentLoaded', function() {
+    if (isRob2 && !isGuest) {
+      document.querySelectorAll('[data-domain-id]').forEach(card => {
+        const domainId = card.dataset.domainId;
+        calculateDomainAssessment(domainId);
+      });
+    }
+    
+    // Load text hints if study has documents
+    const hasDocuments = document.querySelector('.text-hints-container');
+    if (hasDocuments) {
+      loadTextHints();
+    }
   });
 </script>
 {% endblock %}

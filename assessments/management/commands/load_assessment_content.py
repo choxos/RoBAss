@@ -26,6 +26,10 @@ TOOLS_CONTENT = {
                     "Were participants aware of their assigned intervention during the trial?",
                     "Were carers and people delivering the interventions aware of participants' assigned intervention?",
                     "Were there deviations from the intended intervention beyond what would be expected in usual practice?",
+                    "If deviations occurred, were they likely to have affected the outcome?",
+                    "If deviations occurred, were they similar between groups or were they imbalanced between groups?",
+                    "Was an appropriate analysis used to estimate the effect of assignment to intervention?",
+                    "If the analysis was inappropriate, was there potential for a substantial impact on the result?",
                 ],
             },
             {
@@ -36,6 +40,8 @@ TOOLS_CONTENT = {
                 "questions": [
                     "Were outcome data available for all, or nearly all, participants?",
                     "Is there evidence that the result was not biased by missing outcome data?",
+                    "Could missingness in the outcome depend on its true value?",
+                    "Is it likely that missingness in the outcome depended on its true value?",
                 ],
             },
             {
@@ -47,6 +53,8 @@ TOOLS_CONTENT = {
                     "Was the method of measuring the outcome inappropriate?",
                     "Could measurement or ascertainment of the outcome have differed between intervention groups?",
                     "Were outcome assessors aware of the intervention received?",
+                    "Could assessment of the outcome have been influenced by knowledge of intervention received?",
+                    "Is it likely that assessment of the outcome was influenced by knowledge of intervention received?",
                 ],
             },
             {

@@ -9,6 +9,19 @@
     --info-color: #17a2b8;
     --light-color: #f8f9fa;
     --dark-color: #343a40;
+    --navbar-height: 70px;
+}
+
+/* Dark theme variables */
+[data-bs-theme="dark"] {
+    --bs-body-bg: #121212;
+    --bs-body-color: #e0e0e0;
+    --bs-emphasis-color: #ffffff;
+    --bs-secondary-bg: #1e1e1e;
+    --bs-tertiary-bg: #2a2a2a;
+    --bs-border-color: #404040;
+    --bs-link-color: #66b3ff;
+    --bs-link-hover-color: #4da6ff;
 }
 
 /* Body and Layout */
@@ -259,9 +272,193 @@ body {
     }
 }
 
+/* Sticky Navigation Styles */
+.navbar.sticky-top {
+    height: var(--navbar-height);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    transition: all 0.3s ease;
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 991.98px) {
+    .navbar-nav {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+        padding: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1rem !important;
+        border-radius: 8px;
+        margin: 0.1rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Theme Toggle Button */
+#theme-toggle {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1050;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+#theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+#theme-toggle i {
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+/* Dark Theme Specific Styles */
+[data-bs-theme="dark"] .navbar {
+    background: rgba(33, 37, 41, 0.95) !important;
+}
+
+[data-bs-theme="dark"] .card {
+    background: var(--bs-secondary-bg);
+    border-color: var(--bs-border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .signalling-question {
+    background: var(--bs-secondary-bg);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background: var(--bs-secondary-bg);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background: var(--bs-secondary-bg);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(102, 179, 255, 0.25);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .form-label {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .table tbody tr:hover {
+    background-color: var(--bs-secondary-bg);
+}
+
+[data-bs-theme="dark"] .assessment-tool-card {
+    background: var(--bs-secondary-bg);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .dashboard-widget {
+    background: var(--bs-secondary-bg);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .widget-title {
+    color: var(--bs-body-color);
+    border-bottom-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .dropdown-menu {
+    background: var(--bs-secondary-bg);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover,
+[data-bs-theme="dark"] .dropdown-item:focus {
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-emphasis-color);
+}
+
+[data-bs-theme="dark"] .alert {
+    border-color: var(--bs-border-color);
+}
+
+/* Mobile responsive text hiding */
+@media (max-width: 1199.98px) {
+    .d-lg-inline.d-none {
+        display: none !important;
+    }
+}
+
+/* Smooth transitions for theme changes */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Toast container positioning */
+.toast-container {
+    bottom: 70px !important; /* Above theme toggle button */
+}
+
+/* Enhanced mobile menu */
+@media (max-width: 991.98px) {
+    [data-bs-theme="dark"] .navbar-nav {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    [data-bs-theme="dark"] .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Improved contrast for badges in dark mode */
+[data-bs-theme="dark"] .badge.bg-outline-secondary {
+    background-color: var(--bs-secondary-bg) !important;
+    color: var(--bs-body-color) !important;
+    border: 1px solid var(--bs-border-color) !important;
+}
+
+/* Enhanced card headers for dark theme */
+[data-bs-theme="dark"] .card-header {
+    background: linear-gradient(135deg, #1a365d, #2c5282) !important;
+    border-bottom-color: var(--bs-border-color);
+}
+
+/* Footer improvements */
+[data-bs-theme="dark"] footer {
+    background: var(--bs-secondary-bg) !important;
+}
+
 /* Print styles */
 @media print {
-    .navbar, .footer, .btn, .no-print {
+    .navbar, .footer, .btn, .no-print, #theme-toggle {
         display: none !important;
     }
     
@@ -273,5 +470,15 @@ body {
     body {
         font-size: 12pt;
         line-height: 1.4;
+    }
+    
+    [data-bs-theme="dark"] {
+        background: white !important;
+        color: black !important;
+    }
+    
+    [data-bs-theme="dark"] .card {
+        background: white !important;
+        color: black !important;
     }
 }

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
             <div class="text-center mb-5">
                 <h1 class="display-5 fw-bold mb-3">Select Assessment Tool</h1>
                 <p class="lead text-muted">
@@ -13,58 +13,370 @@
                 </p>
             </div>
 
-            {% if tools %}
-                <div class="row g-4">
-                    {% for tool in tools %}
-                    <div class="col-md-6">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body p-4">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                        <i class="fas fa-clipboard-check text-primary"></i>
+            <!-- Interventional Studies -->
+            <div class="card mb-5 border-success border-2">
+                <div class="card-header bg-success bg-opacity-10 border-success">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success bg-opacity-20 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-vials text-success fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-1 text-success">Interventional Studies</h3>
+                            <p class="mb-0 text-muted">Tools for randomized and non-randomized intervention studies</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <!-- RoB 2.0 (Consolidated) -->
+                        <div class="col-lg-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success bg-opacity-15 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-star text-success"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0 text-success">RoB 2.0</h5>
+                                        <span class="badge bg-success ms-2">Recommended</span>
                                     </div>
-                                    <h5 class="card-title mb-0">{{ tool.display_name }}</h5>
+                                    
+                                    <p class="card-text text-muted mb-3">
+                                        Risk of bias 2.0 tool for randomized controlled trials. Supports parallel, crossover, and cluster trial designs.
+                                    </p>
+                                    
+                                    <div class="mb-3">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="bg-white rounded p-2 mb-2">
+                                                    <i class="fas fa-users text-success mb-1"></i>
+                                                    <div class="small fw-bold">Parallel</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="bg-white rounded p-2 mb-2">
+                                                    <i class="fas fa-exchange-alt text-success mb-1"></i>
+                                                    <div class="small fw-bold">Crossover</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="bg-white rounded p-2 mb-2">
+                                                    <i class="fas fa-layer-group text-success mb-1"></i>
+                                                    <div class="small fw-bold">Cluster</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-list me-1"></i>
+                                            5 domains: Randomization, Deviations, Missing Data, Measurement, Reporting
+                                        </small>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Assessment time: ~15-30 minutes
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        {% if user.is_authenticated %}
+                                            <a href="{% url 'assessments:project_list' %}?tool=rob2" class="btn btn-success">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select RoB 2.0
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'assessments:guest_project_create' %}?tool=rob2" class="btn btn-success">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select RoB 2.0 (Guest)
+                                            </a>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                
-                                <p class="card-text text-muted mb-3">{{ tool.description }}</p>
-                                
-                                <div class="mb-3">
-                                    <small class="text-muted">
-                                        <i class="fas fa-list me-1"></i>
-                                        {{ tool.domains.count }} domains
-                                    </small>
-                                </div>
-                                
-                                <div class="d-grid">
-                                    {% if user.is_authenticated %}
-                                        <a href="{% url 'assessments:project_list' %}" class="btn btn-primary">
-                                            <i class="fas fa-arrow-right me-2"></i>
-                                            Select Tool
-                                        </a>
-                                    {% else %}
-                                        <a href="{% url 'assessments:guest_project_create' %}?tool={{ tool.name }}" class="btn btn-primary">
-                                            <i class="fas fa-arrow-right me-2"></i>
-                                            Select Tool (Guest)
-                                        </a>
-                                    {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- ROBINS-I -->
+                        <div class="col-lg-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-warning bg-opacity-15 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-flask text-warning"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">ROBINS-I</h5>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted mb-3">
+                                        Risk of bias in non-randomized studies of interventions. For quasi-experimental and observational studies.
+                                    </p>
+                                    
+                                    <div class="mb-3">
+                                        <div class="bg-white rounded p-3">
+                                            <div class="row text-center">
+                                                <div class="col-6">
+                                                    <i class="fas fa-microscope text-warning mb-2"></i>
+                                                    <div class="small fw-bold">Pre-intervention</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <i class="fas fa-chart-line text-warning mb-2"></i>
+                                                    <div class="small fw-bold">Post-intervention</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-list me-1"></i>
+                                            7 domains: Confounding, Selection, Classification, Deviations, Missing Data, Measurement, Reporting
+                                        </small>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Assessment time: ~20-40 minutes
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        {% if user.is_authenticated %}
+                                            <a href="{% url 'assessments:project_list' %}?tool=robins_i" class="btn btn-warning">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select ROBINS-I
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'assessments:guest_project_create' %}?tool=robins_i" class="btn btn-warning">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select ROBINS-I (Guest)
+                                            </a>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-            {% else %}
-                <div class="text-center py-5">
-                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
-                        <i class="fas fa-tools fa-2x text-muted"></i>
+            </div>
+
+            <!-- Observational Studies -->
+            <div class="card mb-5 border-info border-2">
+                <div class="card-header bg-info bg-opacity-10 border-info">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-info bg-opacity-20 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-eye text-info fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-1 text-info">Observational Studies</h3>
+                            <p class="mb-0 text-muted">Tools for cohort, case-control, and cross-sectional studies</p>
+                        </div>
                     </div>
-                    <h3 class="text-muted">No Assessment Tools Available</h3>
-                    <p class="text-muted">Assessment tools are being configured. Please check back soon.</p>
                 </div>
-            {% endif %}
+                <div class="card-body p-4">
+                    <div class="row g-4 justify-content-center">
+                        <!-- ROBINS-E -->
+                        <div class="col-lg-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-info bg-opacity-15 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-leaf text-info"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">ROBINS-E</h5>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted mb-3">
+                                        Risk of bias in non-randomized studies of environmental and occupational exposures.
+                                    </p>
+                                    
+                                    <div class="mb-3">
+                                        <div class="bg-white rounded p-3">
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <i class="fas fa-industry text-info mb-2"></i>
+                                                    <div class="small fw-bold">Environmental</div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <i class="fas fa-hard-hat text-info mb-2"></i>
+                                                    <div class="small fw-bold">Occupational</div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <i class="fas fa-globe text-info mb-2"></i>
+                                                    <div class="small fw-bold">Population</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-list me-1"></i>
+                                            7 domains: Exposure assessment, confounding, selection bias, and more
+                                        </small>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Assessment time: ~25-45 minutes
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        {% if user.is_authenticated %}
+                                            <a href="{% url 'assessments:project_list' %}?tool=robins_e" class="btn btn-info">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select ROBINS-E
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'assessments:guest_project_create' %}?tool=robins_e" class="btn btn-info">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select ROBINS-E (Guest)
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Systematic Reviews -->
+            <div class="card mb-5 border-primary border-2">
+                <div class="card-header bg-primary bg-opacity-10 border-primary">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-20 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-book-open text-primary fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-1 text-primary">Systematic Reviews</h3>
+                            <p class="mb-0 text-muted">Tools for assessing methodological quality of systematic reviews</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <!-- AMSTAR-2 -->
+                        <div class="col-lg-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-primary bg-opacity-15 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-star text-primary"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">AMSTAR-2</h5>
+                                        <span class="badge bg-primary ms-2">Popular</span>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted mb-3">
+                                        A MeaSurement Tool to Assess systematic Reviews. Critical appraisal tool for systematic reviews.
+                                    </p>
+                                    
+                                    <div class="mb-3">
+                                        <div class="bg-white rounded p-3">
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <i class="fas fa-search text-primary mb-2"></i>
+                                                    <div class="small fw-bold">Search Strategy</div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <i class="fas fa-filter text-primary mb-2"></i>
+                                                    <div class="small fw-bold">Study Selection</div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <i class="fas fa-chart-bar text-primary mb-2"></i>
+                                                    <div class="small fw-bold">Analysis</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-list me-1"></i>
+                                            16 domains: Protocol, search, selection, data extraction, quality assessment
+                                        </small>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Assessment time: ~30-60 minutes
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        {% if user.is_authenticated %}
+                                            <a href="{% url 'assessments:project_list' %}?tool=amstar2" class="btn btn-primary">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select AMSTAR-2
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'assessments:guest_project_create' %}?tool=amstar2" class="btn btn-primary">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select AMSTAR-2 (Guest)
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- ROBIS -->
+                        <div class="col-lg-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-secondary bg-opacity-15 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-shield-alt text-secondary"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">ROBIS</h5>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted mb-3">
+                                        Risk of Bias in Systematic Reviews. Assessment of bias in systematic reviews and meta-analyses.
+                                    </p>
+                                    
+                                    <div class="mb-3">
+                                        <div class="bg-white rounded p-3">
+                                            <div class="row text-center">
+                                                <div class="col-6">
+                                                    <i class="fas fa-cog text-secondary mb-2"></i>
+                                                    <div class="small fw-bold">Review Process</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <i class="fas fa-bullseye text-secondary mb-2"></i>
+                                                    <div class="small fw-bold">Bias Assessment</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-list me-1"></i>
+                                            4 phases: Study eligibility, identification, data collection, synthesis
+                                        </small>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Assessment time: ~20-40 minutes
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        {% if user.is_authenticated %}
+                                            <a href="{% url 'assessments:project_list' %}?tool=robis" class="btn btn-secondary">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select ROBIS
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'assessments:guest_project_create' %}?tool=robis" class="btn btn-secondary">
+                                                <i class="fas fa-arrow-right me-2"></i>
+                                                Select ROBIS (Guest)
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="text-center mt-5">
-                <a href="{% url 'assessments:home' %}" class="btn btn-outline-secondary">
+                <a href="{% url 'assessments:home' %}" class="btn btn-outline-secondary btn-lg">
                     <i class="fas fa-arrow-left me-2"></i>
                     Back to Home
                 </a>
@@ -72,4 +384,19 @@
         </div>
     </div>
 </div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.bg-light .card-body:hover {
+    background-color: rgba(248, 249, 250, 0.8);
+}
+</style>
 {% endblock %}

@@ -1,0 +1,326 @@
+{% extends 'assessments/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.method-card {
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.method-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.1);
+}
+
+.method-card.selected {
+    border-color: #007bff;
+    background-color: #f8f9ff;
+}
+
+.method-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.comparison-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'assessments:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'assessments:project_detail' project.id %}">{{ project.name }}</a></li>
+                    <li class="breadcrumb-item active">Choose Assessment Method</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-route me-2"></i>{{ title }}
+                    </h4>
+                    <small class="opacity-75">Step 3 of 4: Choose how to perform your risk of bias assessment</small>
+                </div>
+                <div class="card-body">
+                    <!-- Study Summary -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6><i class="fas fa-file-alt me-2"></i>{{ metadata.title|default:"Study Title" }}</h6>
+                                <small class="text-muted">
+                                    Assessment Tool: {{ tool.display_name }} | 
+                                    {% if has_pdf %}PDF Uploaded{% else %}No PDF{% endif %}
+                                    {% if extracted_text_length %} | {{ extracted_text_length:,}} chars extracted{% endif %}
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#studyDetailsModal">
+                                    <i class="fas fa-eye me-2"></i>View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" action="{% url 'assessments:create_study_with_assessment' project.id %}" id="methodForm">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-4">Select Assessment Method</h5>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card method-card h-100" data-method="manual">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-edit method-icon text-primary"></i>
+                                        <h5 class="card-title">Manual Assessment</h5>
+                                        <p class="card-text">
+                                            Complete the risk of bias assessment yourself using our guided interface with algorithmic feedback.
+                                        </p>
+                                        <ul class="list-unstyled text-start">
+                                            <li><i class="fas fa-check text-success me-2"></i>Full control over assessment</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Real-time algorithmic guidance</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Works with or without PDF</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Step-by-step explanations</li>
+                                            {% if has_pdf %}
+                                            <li><i class="fas fa-check text-success me-2"></i>PDF text hints available</li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Typically takes 15-30 minutes
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card method-card h-100" data-method="llm" {% if not extracted_text_length %}data-disabled="true"{% endif %}>
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-robot method-icon {% if extracted_text_length %}text-warning{% else %}text-muted{% endif %}"></i>
+                                        <h5 class="card-title">AI-Assisted Assessment</h5>
+                                        {% if extracted_text_length %}
+                                        <p class="card-text">
+                                            Let our AI analyze the PDF text and provide initial risk of bias assessments, which you can review and modify.
+                                        </p>
+                                        <ul class="list-unstyled text-start">
+                                            <li><i class="fas fa-check text-success me-2"></i>Automated initial assessment</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>AI-generated justifications</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Review and edit results</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Algorithmic validation</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Faster completion</li>
+                                        </ul>
+                                        {% else %}
+                                        <p class="card-text text-muted">
+                                            AI-assisted assessment requires PDF text extraction. Upload a PDF to enable this option.
+                                        </p>
+                                        <ul class="list-unstyled text-start">
+                                            <li><i class="fas fa-times text-danger me-2"></i>No PDF text available</li>
+                                            <li><i class="fas fa-info text-info me-2"></i>Upload PDF to enable AI</li>
+                                        </ul>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        {% if extracted_text_length %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            AI processing + review (5-10 minutes)
+                                        </small>
+                                        {% else %}
+                                        <small class="text-danger">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            Requires PDF upload
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="assessment_method" id="selectedMethod" value="">
+
+                        {% if llm_models and extracted_text_length %}
+                        <div id="llmOptions" class="mt-4" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-cog me-2"></i>AI Model Selection</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="llm_model" class="form-label">Choose AI Model</label>
+                                        <select class="form-select" id="llm_model" name="llm_model">
+                                            {% for model in llm_models %}
+                                            <option value="{{ model.id }}">{{ model.display_name }} ({{ model.provider }})</option>
+                                            {% endfor %}
+                                        </select>
+                                        <small class="form-text text-muted">Different models may have varying performance characteristics</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Comparison Table -->
+                        <div class="mt-4">
+                            <h6>Method Comparison</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Feature</th>
+                                            <th>Manual Assessment</th>
+                                            <th>AI-Assisted</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Speed</td>
+                                            <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-muted"></i></td>
+                                            <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Accuracy</td>
+                                            <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i></td>
+                                            <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-muted"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Control</td>
+                                            <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i></td>
+                                            <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-muted"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Learning</td>
+                                            <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i></td>
+                                            <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-muted"></i><i class="fas fa-star text-muted"></i></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'assessments:process_upload' project.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </a>
+                            <button type="submit" class="btn btn-success" id="proceedBtn" disabled>
+                                Create Study & Begin Assessment <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Study Details Modal -->
+<div class="modal fade" id="studyDetailsModal" tabindex="-1" aria-labelledby="studyDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="studyDetailsModalLabel">Study Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Title:</dt>
+                    <dd class="col-sm-9">{{ metadata.title|default:"Not specified" }}</dd>
+                    
+                    <dt class="col-sm-3">Authors:</dt>
+                    <dd class="col-sm-9">{{ metadata.authors|default:"Not specified" }}</dd>
+                    
+                    <dt class="col-sm-3">Journal:</dt>
+                    <dd class="col-sm-9">{{ metadata.journal|default:"Not specified" }}</dd>
+                    
+                    <dt class="col-sm-3">Year:</dt>
+                    <dd class="col-sm-9">{{ metadata.year|default:"Not specified" }}</dd>
+                    
+                    {% if metadata.pmid %}
+                    <dt class="col-sm-3">PMID:</dt>
+                    <dd class="col-sm-9">{{ metadata.pmid }}</dd>
+                    {% endif %}
+                    
+                    {% if metadata.doi %}
+                    <dt class="col-sm-3">DOI:</dt>
+                    <dd class="col-sm-9">{{ metadata.doi }}</dd>
+                    {% endif %}
+                    
+                    <dt class="col-sm-3">Study Design:</dt>
+                    <dd class="col-sm-9">{{ metadata.study_design|default:"Not specified" }}</dd>
+                    
+                    <dt class="col-sm-3">Assessment Tool:</dt>
+                    <dd class="col-sm-9">{{ tool.display_name }}</dd>
+                    
+                    {% if has_pdf %}
+                    <dt class="col-sm-3">PDF:</dt>
+                    <dd class="col-sm-9">
+                        <i class="fas fa-file-pdf text-danger me-2"></i>Uploaded and processed
+                        {% if extracted_text_length %}
+                        <br><small class="text-muted">{{ extracted_text_length:,}} characters extracted</small>
+                        {% endif %}
+                    </dd>
+                    {% endif %}
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const methodCards = document.querySelectorAll('.method-card');
+    const selectedMethodInput = document.getElementById('selectedMethod');
+    const proceedBtn = document.getElementById('proceedBtn');
+    const llmOptions = document.getElementById('llmOptions');
+
+    methodCards.forEach(card => {
+        card.addEventListener('click', function() {
+            if (this.dataset.disabled) return;
+            
+            // Remove selection from all cards
+            methodCards.forEach(c => c.classList.remove('selected'));
+            
+            // Select this card
+            this.classList.add('selected');
+            
+            const method = this.dataset.method;
+            selectedMethodInput.value = method;
+            
+            // Show/hide LLM options
+            if (method === 'llm' && llmOptions) {
+                llmOptions.style.display = 'block';
+            } else if (llmOptions) {
+                llmOptions.style.display = 'none';
+            }
+            
+            proceedBtn.disabled = false;
+        });
+    });
+
+    // Disable AI option if no PDF text
+    {% if not extracted_text_length %}
+    const aiCard = document.querySelector('[data-method="llm"]');
+    if (aiCard) {
+        aiCard.style.cursor = 'not-allowed';
+        aiCard.style.opacity = '0.6';
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

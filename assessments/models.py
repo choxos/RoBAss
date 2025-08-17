@@ -63,6 +63,7 @@ class SignallingQuestion(models.Model):
     question_text = models.TextField()
     order = models.PositiveIntegerField(default=1)
     guidance = models.TextField(blank=True)
+    explanation = models.TextField(blank=True, help_text="Detailed explanation of the question from the crib sheet")
     is_required = models.BooleanField(default=True)
     
     def __str__(self):
@@ -126,7 +127,7 @@ class Assessment(models.Model):
     assessor_name = models.CharField(max_length=100, blank=True)
     assessor_email = models.EmailField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    overall_bias = models.CharField(max_length=50, blank=True)  # Low, Some concerns, High
+    overall_bias = models.CharField(max_length=75, blank=True)  # Low, Some concerns, High, Very high risk
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -145,12 +146,13 @@ class DomainAssessment(models.Model):
         ('low', 'Low risk'),
         ('some_concerns', 'Some concerns'),
         ('high', 'High risk'),
+        ('very_high_risk', 'Very high risk'),
         ('no_information', 'No information'),
     ]
     
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE, related_name='domain_assessments')
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
-    bias_rating = models.CharField(max_length=20, choices=BIAS_CHOICES, blank=True)
+    bias_rating = models.CharField(max_length=25, choices=BIAS_CHOICES, blank=True)
     rationale = models.TextField(blank=True)
     
     def __str__(self):

@@ -1,0 +1,265 @@
+{% extends 'assessments/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.upload-area {
+    border: 2px dashed #007bff;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: #0056b3;
+    background: #e7f3ff;
+}
+
+.upload-area.dragover {
+    border-color: #28a745;
+    background: #d4edda;
+}
+
+.file-input {
+    display: none;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: #007bff;
+    margin-bottom: 1rem;
+}
+
+.file-info {
+    display: none;
+    margin-top: 15px;
+    padding: 10px;
+    background: #e9ecef;
+    border-radius: 5px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'assessments:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'assessments:project_detail' project.id %}">{{ project.name }}</a></li>
+                    <li class="breadcrumb-item active">Upload Study</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>{{ title }}
+                    </h4>
+                    <small class="opacity-75">Step 1 of 4: Upload PDF and provide study identifiers</small>
+                </div>
+                <div class="card-body">
+                    <!-- Tool Information -->
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Assessment Tool: {{ tool.display_name }}</h6>
+                        <p class="mb-0">{{ tool.description }}</p>
+                    </div>
+
+                    <form method="post" action="{% url 'assessments:process_upload' project.id %}" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="tool" value="{{ tool.name }}">
+                        
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h5 class="mb-3">PDF Upload</h5>
+                                
+                                <!-- File Upload Area -->
+                                <div class="upload-area" id="uploadArea">
+                                    <div id="uploadPrompt">
+                                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                        <h5>Drop PDF file here or click to browse</h5>
+                                        <p class="text-muted">Upload the full-text PDF of your study</p>
+                                        <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" class="file-input">
+                                    </div>
+                                    <div class="file-info" id="fileInfo">
+                                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                                        <span id="fileName"></span>
+                                        <span class="text-muted">(<span id="fileSize"></span>)</span>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-3" id="removeFile">
+                                            <i class="fas fa-times"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <h5 class="mb-3">Study Identifiers</h5>
+                                    <p class="text-muted">Provide either PMID or DOI to automatically retrieve metadata (recommended):</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="pmid" class="form-label">PMID</label>
+                                                <input type="text" class="form-control" id="pmid" name="pmid" placeholder="e.g., 12345678">
+                                                <small class="form-text text-muted">PubMed ID</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="doi" class="form-label">DOI</label>
+                                                <input type="text" class="form-control" id="doi" name="doi" placeholder="e.g., 10.1000/journal.2023.123456">
+                                                <small class="form-text text-muted">Digital Object Identifier</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <strong>PDF + PMID/DOI</strong> - Best option for automatic metadata extraction
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <strong>PDF only</strong> - We'll try to extract metadata from the PDF
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <strong>PMID/DOI only</strong> - Metadata only, no full-text analysis
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-info-circle text-info me-2"></i>
+                                                You can edit all metadata in the next step
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="card bg-light mt-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-robot me-2"></i>AI Assessment</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="small mb-0">
+                                            With a PDF upload, you'll have the option to use AI-assisted assessment 
+                                            or perform manual assessment after confirming your study details.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'assessments:project_detail' project.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="nextBtn" disabled>
+                                Next: Confirm Details <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('pdf_file');
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFileBtn = document.getElementById('removeFile');
+    const nextBtn = document.getElementById('nextBtn');
+    const pmidInput = document.getElementById('pmid');
+    const doiInput = document.getElementById('doi');
+
+    // File upload handling
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', handleDragOver);
+    uploadArea.addEventListener('dragleave', handleDragLeave);
+    uploadArea.addEventListener('drop', handleDrop);
+    fileInput.addEventListener('change', handleFileSelect);
+    removeFileBtn.addEventListener('click', removeFile);
+
+    // Input validation
+    [pmidInput, doiInput, fileInput].forEach(input => {
+        input.addEventListener('change', validateForm);
+    });
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type === 'application/pdf') {
+            fileInput.files = files;
+            showFileInfo(files[0]);
+        }
+    }
+
+    function handleFileSelect(e) {
+        if (e.target.files.length > 0) {
+            showFileInfo(e.target.files[0]);
+        }
+    }
+
+    function showFileInfo(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        uploadPrompt.style.display = 'none';
+        fileInfo.style.display = 'block';
+        validateForm();
+    }
+
+    function removeFile() {
+        fileInput.value = '';
+        uploadPrompt.style.display = 'block';
+        fileInfo.style.display = 'none';
+        validateForm();
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function validateForm() {
+        const hasFile = fileInput.files.length > 0;
+        const hasPmid = pmidInput.value.trim().length > 0;
+        const hasDoi = doiInput.value.trim().length > 0;
+        
+        nextBtn.disabled = !(hasFile || hasPmid || hasDoi);
+    }
+});
+</script>
+{% endblock %}
