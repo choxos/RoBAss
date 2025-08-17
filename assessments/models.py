@@ -195,3 +195,63 @@ class AssessmentExport(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+
+
+class StudyDocument(models.Model):
+    """Documents uploaded for a study (full text, protocol, etc.)"""
+    DOCUMENT_TYPES = [
+        ('full_text', 'Full Text Article'),
+        ('protocol', 'Study Protocol'),
+        ('supplementary', 'Supplementary Material'),
+        ('registry', 'Trial Registry Entry'),
+        ('other', 'Other Document'),
+    ]
+    
+    study = models.ForeignKey(Study, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPES)
+    title = models.CharField(max_length=200)
+    file = models.FileField(upload_to='study_documents/%Y/%m/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    file_size = models.PositiveIntegerField(help_text='Size in bytes')
+    extracted_text = models.TextField(blank=True, help_text='Extracted text content for LLM processing')
+    
+    def __str__(self):
+        return f"{self.study.title[:50]} - {self.get_document_type_display()}"
+    
+    def save(self, *args, **kwargs):
+        if self.file:
+            self.file_size = self.file.size
+        super().save(*args, **kwargs)
+
+
+class LLMModel(models.Model):
+    """Available LLM models for automated assessments"""
+    provider = models.CharField(max_length=50)  # e.g., 'Gemini', 'Claude', 'ChatGPT'
+    model_name = models.CharField(max_length=100)  # e.g., 'gemini-2.5-pro'
+    display_name = models.CharField(max_length=150)  # Human-readable name
+    is_active = models.BooleanField(default=True)
+    context_length = models.PositiveIntegerField(default=128000, help_text='Context window size in tokens')
+    api_endpoint = models.URLField(blank=True, help_text='Custom API endpoint if needed')
+    
+    class Meta:
+        unique_together = ('provider', 'model_name')
+        ordering = ['provider', 'display_name']
+    
+    def __str__(self):
+        return f"{self.provider} - {self.display_name}"
+
+
+class LLMAssessment(models.Model):
+    """LLM-generated assessment results"""
+    assessment = models.OneToOneField(Assessment, on_delete=models.CASCADE, related_name='llm_assessment')
+    llm_model = models.ForeignKey(LLMModel, on_delete=models.CASCADE)
+    prompt_used = models.TextField()
+    raw_response = models.TextField()
+    parsed_results = models.JSONField()  # Structured assessment results
+    confidence_score = models.FloatField(null=True, blank=True, help_text='LLM confidence in assessment (0-1)')
+    created_at = models.DateTimeField(auto_now_add=True)
+    processing_time = models.FloatField(null=True, blank=True, help_text='Processing time in seconds')
+    error_message = models.TextField(blank=True, help_text='Error details if processing failed')
+    
+    def __str__(self):
+        return f"LLM Assessment for {self.assessment} using {self.llm_model}"

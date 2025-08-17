@@ -16,6 +16,53 @@ from .models import (
 )
 from .forms import ProjectForm, StudyForm
 from .utils import generate_visualization, export_assessments_csv
+from .rob2_engine import calculate_rob2_assessment
+
+
+def calculate_automatic_rob2_assessment(assessment):
+    """Calculate automatic RoB 2.0 assessment from user responses"""
+    # Get all question responses
+    responses = {}
+    question_responses = QuestionResponse.objects.filter(
+        domain_assessment__assessment=assessment
+    ).select_related('signalling_question', 'domain_assessment__domain')
+    
+    for qr in question_responses:
+        domain_order = qr.domain_assessment.domain.order
+        question_order = qr.signalling_question.order
+        question_key = f"{domain_order}.{question_order}"
+        
+        # Map response to RoB 2.0 format
+        response_mapping = {
+            'yes': 'Y',
+            'probably_yes': 'PY',
+            'probably_no': 'PN',
+            'no': 'N',
+            'no_information': 'NI',
+            'not_applicable': 'NA'
+        }
+        
+        if qr.response in response_mapping:
+            responses[question_key] = response_mapping[qr.response]
+    
+    # Calculate assessment using RoB 2.0 engine
+    if len(responses) >= 22:  # Minimum questions for RoB 2.0
+        results = calculate_rob2_assessment(responses)
+        
+        # Update assessment overall bias
+        if 'overall' in results:
+            overall_risk_mapping = {
+                'Low': 'Low risk',
+                'Some concerns': 'Some concerns', 
+                'High': 'High risk'
+            }
+            mapped_risk = overall_risk_mapping.get(results['overall']['risk'], results['overall']['risk'])
+            assessment.overall_bias = mapped_risk
+            assessment.save()
+        
+        return results
+    
+    return None
 
 
 def home_view(request):
@@ -479,10 +526,24 @@ def save_response_view(request, assessment_id):
         assessment.updated_at = timezone.now()
         assessment.save()
         
-        return JsonResponse({
+        # Calculate automatic assessment if this is RoB 2.0 parallel trial
+        auto_assessment_results = None
+        if assessment.assessment_tool.name == 'rob2_parallel':
+            try:
+                auto_assessment_results = calculate_automatic_rob2_assessment(assessment)
+            except Exception as e:
+                # Log error but don't fail the response saving
+                print(f"Error calculating automatic assessment: {str(e)}")
+        
+        response_data = {
             'success': True,
             'message': 'Response saved successfully'
-        })
+        }
+        
+        if auto_assessment_results:
+            response_data['auto_assessment'] = auto_assessment_results
+        
+        return JsonResponse(response_data)
     
     except Exception as e:
         return JsonResponse({
